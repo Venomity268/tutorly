@@ -1,0 +1,50 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.swo
+*.swp
+
+# Project specific
+/node_modules/
+package-lock.json
+package.json
+
+# Backup files
+*.bak
+*.backup
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment files
+.env
+.env.local
+
+# Build directories
+/dist
+/build
+/out
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Coverage reports
+/coverage
+.nyc_output
+
+# Optional: if you add images later
+*.psd
+*.ai
+*.sketch
+
+# Keep the structure clean
+.DS_Store
+**/.DS_Store
