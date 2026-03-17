@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorly — Find a tutor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../styles/main.css">
+</head>
+<body>
+    <h1 class="page-title">Tutorly</h1>
+    <p class="page-subtitle">Find the right tutor. Book in minutes.</p>
+    
+    <div class="demo-container">
+        <header class="demo-header">
+            <div class="logo">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span>Tutorly</span>
+            </div>
+            <nav class="demo-nav">
+                <button class="nav-btn" data-screen="onboarding" type="button">Onboarding</button>
+                <button class="nav-btn" data-screen="search" type="button">Find Tutor</button>
+                <button class="nav-btn" data-screen="profile" type="button">Profile</button>
+                <button class="nav-btn" data-screen="booking" type="button">Book Session</button>
+                <button class="nav-btn" data-screen="dashboard" type="button">Dashboard</button>
+            </nav>
+        </header>
+
+        <main class="demo-content">
+            <section id="search" class="screen active">
+                <div class="screen-title">
+                    <i class="fas fa-search"></i>
+                    <span>Find Your Perfect Tutor</span>
+                </div>
+                <p class="screen-subtitle">Browse tutors by subject, price, and rating. Compare and choose your ideal match.</p>
+                
+                <div class="search-container">
+                    <div class="search-bar">
+                        <input type="text" class="search-input" placeholder="Search by subject or tutor name..." value="Physics">
+                        <select class="filter-select">
+                            <option>All Subjects</option>
+                            <option selected>Physics</option>
+                            <option>Mathematics</option>
+                            <option>Chemistry</option>
+                        </select>
+                        <select class="filter-select">
+                            <option>Any Price</option>
+                            <option selected>$20-$40/hr</option>
+                            <option>$40-$60/hr</option>
+                            <option>$60+/hr</option>
+                        </select>
+                        <button class="btn-primary" style="width: auto; padding: 15px 30px;">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="tutor-grid">
+                    <div class="tutor-card" data-navigate="profile">
+                        <div class="tutor-header">
+                            <div class="tutor-avatar">DR</div>
+                            <div class="tutor-info">
+                                <h3>Dr. Sarah Chen</h3>
+                                <div class="tutor-subject">PhD in Physics • 8 years experience</div>
+                            </div>
+                        </div>
+                        <div class="tutor-rating">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                            <span style="color: #6b7280; margin-left: 5px;">4.7 (128 reviews)</span>
+                        </div>
+                        <p style="color: #6b7280; margin: 10px 0;">Specializes in quantum mechanics and thermodynamics. University lecturer with proven track record.</p>
+                        <div class="tutor-price">$45/hr</div>
+                        <div class="verification-badge"><i class="fas fa-check-circle"></i> Verified Tutor</div>
+                    </div>
+                    <div class="tutor-card" data-navigate="profile">
+                        <div class="tutor-header">
+                            <div class="tutor-avatar">MJ</div>
+                            <div class="tutor-info">
+                                <h3>Michael Johnson</h3>
+                                <div class="tutor-subject">MSc Physics • 5 years experience</div>
+                            </div>
+                        </div>
+                        <div class="tutor-rating">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                            <span style="color: #6b7280; margin-left: 5px;">5.0 (64 reviews)</span>
+                        </div>
+                        <p style="color: #6b7280; margin: 10px 0;">High school physics specialist. Makes complex concepts easy to understand.</p>
+                        <div class="tutor-price">$35/hr</div>
+                        <div class="verification-badge"><i class="fas fa-check-circle"></i> Verified Tutor</div>
+                    </div>
+                    <div class="tutor-card" data-navigate="profile">
+                        <div class="tutor-header">
+                            <div class="tutor-avatar">RP</div>
+                            <div class="tutor-info">
+                                <h3>Rebecca Patel</h3>
+                                <div class="tutor-subject">BEng Physics • 3 years experience</div>
+                            </div>
+                        </div>
+                        <div class="tutor-rating">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                            <span style="color: #6b7280; margin-left: 5px;">4.9 (42 reviews)</span>
+                        </div>
+                        <p style="color: #6b7280; margin: 10px 0;">Expert in exam preparation and problem-solving techniques. Patient and encouraging.</p>
+                        <div class="tutor-price">$28/hr</div>
+                        <div class="verification-badge"><i class="fas fa-check-circle"></i> Verified Tutor</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <footer class="demo-footer">
+        Tutorly • Built for reliable tutor discovery and booking
+    </footer>
+
+    <script src="../scripts/main.js"></script>
+</body>
+</html>

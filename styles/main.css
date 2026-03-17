@@ -79,6 +79,21 @@ body {
     font-weight: 600;
     transition: all 0.3s;
     font-size: 14px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-btn[disabled] {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.nav-btn[disabled]:hover {
+    background: rgba(255,255,255,0.2);
+    transform: none;
 }
 
 .nav-btn:hover {

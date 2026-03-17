@@ -1,16 +1,15 @@
-# Tutorly - Interactive Demo Platform
+# Tutorly
 
-A fully interactive prototype for the Tutorly tutoring platform, designed for pitch presentations and user testing.
+A lightweight web app for the Tutorly tutoring platform, implementing the core “happy path” from onboarding to booking.
 
-## 🌟 Features
+## Features
 
-- **5 Interactive Screens**: Complete user journey from onboarding to dashboard
+- **Core user journey**: Onboarding → tutor search → profile → booking → dashboard
 - **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
-- **Realistic Interactions**: Click through the entire tutor booking flow
-- **Clean, Modern UI**: Professional design with smooth animations
-- **Separated Codebase**: Well-organized HTML, CSS, and JavaScript files
+- **Modern UI**: Professional design with smooth animations
+- **Simple structure**: Well-organized HTML, CSS, and JavaScript files
 
-## 📱 Screens Overview
+## Screens Overview
 
 1. **Student Onboarding** - Create account and set preferences
 2. **Tutor Search** - Browse and filter verified tutors
@@ -18,16 +17,15 @@ A fully interactive prototype for the Tutorly tutoring platform, designed for pi
 4. **Booking Flow** - Select time slots and confirm sessions
 5. **Tutor Dashboard** - Manage sessions and earnings
 
-## 🚀 Quick Start
+## Quick Start
 
 1. Clone or download this repository
-2. Open `index.html` in your browser
-3. Navigate using the top menu or interactive elements
-4. Click through the demo to experience the full flow
+2. Start a local static server in the project root
+3. Open the site in your browser
 
-## 📁 Project Structure
+## Project Structure
 
-tutorly-demo/
+tutorly/
 │
 ├── index.html # Main HTML file
 ├── styles/
@@ -37,7 +35,7 @@ tutorly-demo/
 └── README.md # This documentation file
 
 
-## 🎯 Key Interactions
+## Key Interactions
 
 - **Navigation Buttons**: Switch between any screen
 - **Tutor Cards**: Click to view full profile
@@ -45,15 +43,15 @@ tutorly-demo/
 - **Action Buttons**: Progress through the flow
 - **Keyboard Navigation**: Use left/right arrows to switch screens
 
-## 💻 Technical Details
+## Technical Details
 
-- **Pure HTML/CSS/JavaScript** - No frameworks or dependencies
+- **Pure HTML/CSS/JavaScript** - No frontend frameworks required
 - **Font Awesome Icons** - For consistent iconography
 - **CSS Grid & Flexbox** - Modern, flexible layouts
 - **Mobile-First Responsive** - Adapts to any screen size
 - **Smooth Animations** - Enhanced user experience
 
-## 🎨 Customization
+## Customization
 
 ### Colors
 The main color scheme uses indigo and purple gradients:
@@ -76,13 +74,13 @@ Modify `styles/main.css` to:
 - Modify animations
 - Add new responsive breakpoints
 
-## 📱 Responsive Breakpoints
+## Responsive Breakpoints
 
 - **Desktop**: > 768px - Full layout with multi-column grids
 - **Tablet**: 481px - 768px - Adjusted spacing and layouts
 - **Mobile**: < 480px - Single column, optimized touch targets
 
-## 🔧 Browser Support
+## Browser Support
 
 - Chrome (latest)
 - Firefox (latest)
@@ -90,16 +88,16 @@ Modify `styles/main.css` to:
 - Edge (latest)
 - Opera (latest)
 
-## 🚦 Performance
+## Performance
 
 - Minimal dependencies (only Font Awesome)
 - Optimized CSS with no unused styles
 - Efficient JavaScript event delegation
 - Smooth 60fps animations
 
-## 🤝 Contributing
+## Contributing
 
-Feel free to customize this demo for your specific needs:
+Feel free to customize Tutorly for your specific needs:
 
 1. Fork the repository
 2. Create a feature branch
@@ -107,20 +105,18 @@ Feel free to customize this demo for your specific needs:
 4. Test thoroughly
 5. Submit a pull request
 
-## 📝 License
+## License
 
-This project is available for commercial and personal use. attribution is appreciated but not required.
+This project is available for commercial and personal use. Attribution is appreciated but not required.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Font Awesome for the beautiful icons
 - Unsplash for placeholder images (not included)
 - The Tutorly team for the concept
 
-## 📧 Contact
+## Contact
 
 For questions or support, please reach out to the Tutorly team.
 
 ---
-
-**Made with ❤️ for education technology**

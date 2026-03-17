@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorly — Get started</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../styles/main.css">
+</head>
+<body>
+    <h1 class="page-title">Tutorly</h1>
+    <p class="page-subtitle">Find the right tutor. Book in minutes.</p>
+    
+    <div class="demo-container">
+        <header class="demo-header">
+            <div class="logo">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span>Tutorly</span>
+            </div>
+            <nav class="demo-nav">
+                <button class="nav-btn" data-screen="onboarding" type="button">Onboarding</button>
+                <button class="nav-btn" data-screen="search" type="button">Find Tutor</button>
+                <button class="nav-btn" data-screen="profile" type="button">Profile</button>
+                <button class="nav-btn" data-screen="booking" type="button">Book Session</button>
+                <button class="nav-btn" data-screen="dashboard" type="button">Dashboard</button>
+            </nav>
+        </header>
+
+        <main class="demo-content">
+            <section id="onboarding" class="screen active">
+                <div class="screen-title">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Get Started</span>
+                </div>
+                <p class="screen-subtitle">Create your account to search tutors and book sessions.</p>
+                
+                <div class="onboarding-form">
+                    <div style="display:flex; gap:10px; margin-bottom: 20px;">
+                        <button class="nav-btn" id="auth-mode-register" type="button" style="background: white; color: #4f46e5;">Create Account</button>
+                        <button class="nav-btn" id="auth-mode-login" type="button">Sign In</button>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input id="auth-full-name" type="text" class="form-input" placeholder="Alex Johnson" value="Alex Johnson">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input id="auth-email" type="email" class="form-input" placeholder="alex@example.com" value="alex@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input id="auth-password" type="password" class="form-input" placeholder="Minimum 8 characters" value="password123">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Account Type</label>
+                        <select id="auth-role" class="form-input">
+                            <option value="student" selected>Student</option>
+                            <option value="tutor">Tutor</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">What do you need help with?</label>
+                        <select id="student-subject" class="form-input">
+                            <option>Mathematics</option>
+                            <option selected>Physics</option>
+                            <option>Chemistry</option>
+                            <option>English</option>
+                            <option>Computer Science</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Education Level</label>
+                        <select id="student-level" class="form-input">
+                            <option>High School</option>
+                            <option selected>University</option>
+                            <option>Graduate</option>
+                            <option>Professional Development</option>
+                        </select>
+                    </div>
+                    <div id="auth-error" style="display:none; background:#fee2e2; color:#991b1b; padding:12px 14px; border-radius:10px; margin-top: 10px;"></div>
+                    <button class="btn-primary" id="auth-submit" type="button">Continue</button>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <footer class="demo-footer">
+        Tutorly • Built for reliable tutor discovery and booking
+    </footer>
+
+    <script src="../scripts/main.js"></script>
+</body>
+</html>

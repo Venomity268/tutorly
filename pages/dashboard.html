@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorly — Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../styles/main.css">
+</head>
+<body>
+    <h1 class="page-title">Tutorly</h1>
+    <p class="page-subtitle">Find the right tutor. Book in minutes.</p>
+    
+    <div class="demo-container">
+        <header class="demo-header">
+            <div class="logo">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span>Tutorly</span>
+            </div>
+            <nav class="demo-nav">
+                <button class="nav-btn" data-screen="onboarding" type="button">Onboarding</button>
+                <button class="nav-btn" data-screen="search" type="button">Find Tutor</button>
+                <button class="nav-btn" data-screen="profile" type="button">Profile</button>
+                <button class="nav-btn" data-screen="booking" type="button">Book Session</button>
+                <button class="nav-btn" data-screen="dashboard" type="button">Dashboard</button>
+            </nav>
+        </header>
+
+        <main class="demo-content">
+            <section id="dashboard" class="screen active">
+                <div class="screen-title">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </div>
+                <p class="screen-subtitle">Manage your sessions and schedule in one place.</p>
+                
+                <div class="dashboard-stats">
+                    <div class="stat-card"><div class="stat-value">$1,280</div><div class="stat-label">This Month's Earnings</div></div>
+                    <div class="stat-card"><div class="stat-value">24</div><div class="stat-label">Upcoming Sessions</div></div>
+                    <div class="stat-card"><div class="stat-value">4.9</div><div class="stat-label">Average Rating</div></div>
+                    <div class="stat-card"><div class="stat-value">96%</div><div class="stat-label">Booking Rate</div></div>
+                </div>
+                
+                <div class="upcoming-sessions">
+                    <h3 style="color: #1f2937; margin-bottom: 20px;">Today's Sessions</h3>
+                    <div class="session-item">
+                        <div><div style="font-weight: 600;">Alex Johnson</div><div style="color: #6b7280; font-size: 14px;">Physics • Quantum Mechanics</div></div>
+                        <div><div style="font-weight: 600;">3:00 PM - 4:00 PM</div><div style="color: #10b981; font-size: 14px;"><i class="fas fa-circle" style="font-size: 8px;"></i> Confirmed</div></div>
+                        <button class="nav-btn" style="background: #f3f4f6; color: #4f46e5;"><i class="fas fa-video"></i> Join</button>
+                    </div>
+                    <div class="session-item">
+                        <div><div style="font-weight: 600;">Maria Garcia</div><div style="color: #6b7280; font-size: 14px;">Physics • Thermodynamics</div></div>
+                        <div><div style="font-weight: 600;">5:30 PM - 6:30 PM</div><div style="color: #f59e0b; font-size: 14px;"><i class="fas fa-circle" style="font-size: 8px;"></i> Pending Payment</div></div>
+                        <button class="nav-btn" style="background: #f3f4f6; color: #4f46e5;"><i class="fas fa-envelope"></i> Message</button>
+                    </div>
+                    <div class="session-item">
+                        <div><div style="font-weight: 600;">David Kim</div><div style="color: #6b7280; font-size: 14px;">Physics • Exam Prep</div></div>
+                        <div><div style="font-weight: 600;">7:00 PM - 8:00 PM</div><div style="color: #10b981; font-size: 14px;"><i class="fas fa-circle" style="font-size: 8px;"></i> Confirmed</div></div>
+                        <button class="nav-btn" style="background: #f3f4f6; color: #4f46e5;"><i class="fas fa-calendar"></i> Reschedule</button>
+                    </div>
+                </div>
+                
+                <div style="display: flex; justify-content: center; margin-top: 40px;">
+                    <a class="btn-primary" style="width: auto; padding: 15px 40px;" href="./onboarding.html"><i class="fas fa-redo"></i> Start Over</a>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <footer class="demo-footer">
+        Tutorly • Built for reliable tutor discovery and booking
+    </footer>
+
+    <script src="../scripts/main.js"></script>
+</body>
+</html>

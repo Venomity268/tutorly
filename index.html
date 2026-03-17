@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tutorly — project structure (multi‑file demo)</title>
+    <title>Tutorly — Find and book a tutor</title>
     <!-- Font Awesome (kept as CDN for simplicity) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- main stylesheet (external) -->
     <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
-    <h1 class="page-title">Tutorly Demo</h1>
-    <p class="page-subtitle">Interactive Prototype for Presentation</p>
+    <h1 class="page-title">Tutorly</h1>
+    <p class="page-subtitle">Find the right tutor. Book in minutes.</p>
     
     <div class="demo-container">
         <!-- header with navigation (semantic) -->
@@ -21,310 +21,31 @@
                 <span>Tutorly</span>
             </div>
             <nav class="demo-nav">
-                <button class="nav-btn" data-screen="onboarding">1. Onboarding</button>
-                <button class="nav-btn" data-screen="search">2. Find Tutor</button>
-                <button class="nav-btn" data-screen="profile">3. Profile</button>
-                <button class="nav-btn" data-screen="booking">4. Book Session</button>
-                <button class="nav-btn" data-screen="dashboard">5. Dashboard</button>
+                <button class="nav-btn" data-screen="onboarding">Onboarding</button>
+                <button class="nav-btn" data-screen="search">Find Tutor</button>
+                <button class="nav-btn" data-screen="profile">Profile</button>
+                <button class="nav-btn" data-screen="booking">Book Session</button>
+                <button class="nav-btn" data-screen="dashboard">Dashboard</button>
             </nav>
         </header>
 
-        <!-- main content: each screen is a separate section (logically partial) -->
         <main class="demo-content">
-            <!-- screen 1: onboarding (student) -->
-            <section id="onboarding" class="screen active">
+            <section class="screen active">
                 <div class="screen-title">
-                    <i class="fas fa-user-plus"></i>
-                    <span>Student Onboarding</span>
+                    <i class="fas fa-link"></i>
+                    <span>Welcome</span>
                 </div>
-                <p class="screen-subtitle">Get started with Tutorly in under 2 minutes. Create your account to find the perfect tutor.</p>
-                
-                <div class="onboarding-form">
-                    <div class="form-group">
-                        <label class="form-label">Full Name</label>
-                        <input type="text" class="form-input" placeholder="Alex Johnson" value="Alex Johnson">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Email Address</label>
-                        <input type="email" class="form-input" placeholder="alex@example.com" value="alex@example.com">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">What do you need help with?</label>
-                        <select class="form-input">
-                            <option>Mathematics</option>
-                            <option selected>Physics</option>
-                            <option>Chemistry</option>
-                            <option>English</option>
-                            <option>Computer Science</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Education Level</label>
-                        <select class="form-input">
-                            <option>High School</option>
-                            <option selected>University</option>
-                            <option>Graduate</option>
-                            <option>Professional Development</option>
-                        </select>
-                    </div>
-                    <button class="btn-primary" data-navigate="search">Create Account & Find Tutors</button>
-                </div>
-            </section>
-
-            <!-- screen 2: tutor search -->
-            <section id="search" class="screen">
-                <div class="screen-title">
-                    <i class="fas fa-search"></i>
-                    <span>Find Your Perfect Tutor</span>
-                </div>
-                <p class="screen-subtitle">Browse verified tutors by subject, price, and rating. Compare and choose your ideal match.</p>
-                
-                <div class="search-container">
-                    <div class="search-bar">
-                        <input type="text" class="search-input" placeholder="Search by subject or tutor name..." value="Physics">
-                        <select class="filter-select">
-                            <option>All Subjects</option>
-                            <option selected>Physics</option>
-                            <option>Mathematics</option>
-                            <option>Chemistry</option>
-                        </select>
-                        <select class="filter-select">
-                            <option>Any Price</option>
-                            <option selected>$20-$40/hr</option>
-                            <option>$40-$60/hr</option>
-                            <option>$60+/hr</option>
-                        </select>
-                        <button class="btn-primary" style="width: auto; padding: 15px 30px;">
-                            <i class="fas fa-search"></i> Search
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="tutor-grid">
-                    <!-- card 1: Dr. Sarah Chen -->
-                    <div class="tutor-card" data-navigate="profile">
-                        <div class="tutor-header">
-                            <div class="tutor-avatar">DR</div>
-                            <div class="tutor-info">
-                                <h3>Dr. Sarah Chen</h3>
-                                <div class="tutor-subject">PhD in Physics • 8 years experience</div>
-                            </div>
-                        </div>
-                        <div class="tutor-rating">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-                            <span style="color: #6b7280; margin-left: 5px;">4.7 (128 reviews)</span>
-                        </div>
-                        <p style="color: #6b7280; margin: 10px 0;">Specializes in quantum mechanics and thermodynamics. University lecturer with proven track record.</p>
-                        <div class="tutor-price">$45/hr</div>
-                        <div class="verification-badge"><i class="fas fa-check-circle"></i> Verified Tutor</div>
-                    </div>
-                    <!-- card 2: Michael Johnson -->
-                    <div class="tutor-card" data-navigate="profile">
-                        <div class="tutor-header">
-                            <div class="tutor-avatar">MJ</div>
-                            <div class="tutor-info">
-                                <h3>Michael Johnson</h3>
-                                <div class="tutor-subject">MSc Physics • 5 years experience</div>
-                            </div>
-                        </div>
-                        <div class="tutor-rating">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                            <span style="color: #6b7280; margin-left: 5px;">5.0 (64 reviews)</span>
-                        </div>
-                        <p style="color: #6b7280; margin: 10px 0;">High school physics specialist. Makes complex concepts easy to understand.</p>
-                        <div class="tutor-price">$35/hr</div>
-                        <div class="verification-badge"><i class="fas fa-check-circle"></i> Verified Tutor</div>
-                    </div>
-                    <!-- card 3: Rebecca Patel -->
-                    <div class="tutor-card" data-navigate="profile">
-                        <div class="tutor-header">
-                            <div class="tutor-avatar">RP</div>
-                            <div class="tutor-info">
-                                <h3>Rebecca Patel</h3>
-                                <div class="tutor-subject">BEng Physics • 3 years experience</div>
-                            </div>
-                        </div>
-                        <div class="tutor-rating">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                            <span style="color: #6b7280; margin-left: 5px;">4.9 (42 reviews)</span>
-                        </div>
-                        <p style="color: #6b7280; margin: 10px 0;">Expert in exam preparation and problem-solving techniques. Patient and encouraging.</p>
-                        <div class="tutor-price">$28/hr</div>
-                        <div class="verification-badge"><i class="fas fa-check-circle"></i> Verified Tutor</div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- screen 3: tutor profile (Dr. Chen as example) -->
-            <section id="profile" class="screen">
-                <div class="screen-title">
-                    <i class="fas fa-user-tie"></i>
-                    <span>Tutor Profile</span>
-                </div>
-                <p class="screen-subtitle">View tutor details, subjects, availability, and reviews before booking.</p>
-                
-                <div class="profile-container">
-                    <aside class="profile-sidebar">
-                        <div class="profile-avatar-large">DR</div>
-                        <h2 style="text-align: center; color: #1f2937;">Dr. Sarah Chen</h2>
-                        <p style="text-align: center; color: #4f46e5; font-weight: 600;">PhD in Physics</p>
-                        <div class="profile-stats">
-                            <div class="stat"><div class="stat-value">4.7</div><div class="stat-label">Rating</div></div>
-                            <div class="stat"><div class="stat-value">128</div><div class="stat-label">Students</div></div>
-                            <div class="stat"><div class="stat-value">420+</div><div class="stat-label">Hours</div></div>
-                        </div>
-                        <div style="margin: 25px 0;">
-                            <h3 style="color: #1f2937; margin-bottom: 10px;">Subjects</h3>
-                            <div>
-                                <span class="subject-tag">Physics</span>
-                                <span class="subject-tag">Quantum Mechanics</span>
-                                <span class="subject-tag">Thermodynamics</span>
-                                <span class="subject-tag">Electromagnetism</span>
-                                <span class="subject-tag">Classical Mechanics</span>
-                            </div>
-                        </div>
-                        <div style="margin: 25px 0;">
-                            <h3 style="color: #1f2937; margin-bottom: 10px;">Hourly Rate</h3>
-                            <div style="font-size: 32px; font-weight: 800; color: #10b981;">$45/hr</div>
-                        </div>
-                        <button class="btn-primary" data-navigate="booking"><i class="fas fa-calendar-check"></i> Book Session</button>
-                    </aside>
-                    <div class="profile-main">
-                        <h3 style="color: #1f2937; margin-bottom: 15px;">About</h3>
-                        <p style="color: #6b7280; line-height: 1.6; margin-bottom: 25px;">
-                            I hold a PhD in Theoretical Physics from Stanford University and have been teaching physics for over 8 years. 
-                            Currently, I'm a lecturer at the University of Toronto. My teaching approach focuses on building intuitive 
-                            understanding before diving into complex mathematics. I've helped over 120 students improve their grades 
-                            by at least one letter grade.
-                        </p>
-                        <h3 style="color: #1f2937; margin-bottom: 15px;">Availability</h3>
-                        <p style="color: #6b7280; margin-bottom: 25px;">
-                            <i class="fas fa-calendar-alt" style="color: #4f46e5;"></i> 
-                            <strong>Next available:</strong> Tomorrow, 2:00 PM - 4:00 PM
-                        </p>
-                        <h3 style="color: #1f2937; margin-bottom: 15px;">Recent Reviews</h3>
-                        <div class="review-card">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                                <strong style="color: #1f2937;">James Wilson</strong>
-                                <div style="color: #f59e0b;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-                            </div>
-                            <p style="color: #6b7280;">"Dr. Chen helped me understand quantum mechanics concepts that had confused me for months. My grade improved from C+ to A-."</p>
-                        </div>
-                        <div class="review-card">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                                <strong style="color: #1f2937;">Priya Sharma</strong>
-                                <div style="color: #f59e0b;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-                            </div>
-                            <p style="color: #6b7280;">"Excellent tutor! She breaks down complex problems into manageable steps. Highly recommended for university-level physics."</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- screen 4: booking -->
-            <section id="booking" class="screen">
-                <div class="screen-title">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span>Book Your Session</span>
-                </div>
-                <p class="screen-subtitle">Select your preferred date and time for your tutoring session.</p>
-                
-                <div class="booking-container">
-                    <div class="calendar-section">
-                        <h3 style="color: #1f2937; margin-bottom: 15px;">Select Date & Time</h3>
-                        <div style="background: #f3f4f6; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <h4 style="color: #1f2937;">Tomorrow, June 15</h4>
-                                <span style="color: #10b981; font-weight: 600;"><i class="fas fa-check-circle"></i> Available</span>
-                            </div>
-                        </div>
-                        <h4 style="color: #1f2937; margin: 20px 0 10px;">Available Time Slots</h4>
-                        <div class="time-slots">
-                            <div class="time-slot" data-time="2:00 PM">2:00 PM</div>
-                            <div class="time-slot" data-time="2:30 PM">2:30 PM</div>
-                            <div class="time-slot selected" data-time="3:00 PM">3:00 PM</div>
-                            <div class="time-slot" data-time="3:30 PM">3:30 PM</div>
-                            <div class="time-slot" data-time="4:00 PM">4:00 PM</div>
-                            <div class="time-slot" data-time="4:30 PM">4:30 PM</div>
-                        </div>
-                        <div style="margin-top: 30px;">
-                            <h4 style="color: #1f2937; margin-bottom: 10px;">Session Length</h4>
-                            <div style="display: flex; gap: 10px;">
-                                <button class="nav-btn" style="background: #4f46e5; color: white;">30 min</button>
-                                <button class="nav-btn">45 min</button>
-                                <button class="nav-btn">60 min</button>
-                                <button class="nav-btn">90 min</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="booking-summary">
-                        <h3 style="color: #1f2937; margin-bottom: 20px;">Booking Summary</h3>
-                        <div style="display: flex; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb;">
-                            <div class="tutor-avatar" style="width: 50px; height: 50px; font-size: 18px;">DR</div>
-                            <div style="margin-left: 15px;">
-                                <h4 style="color: #1f2937;">Dr. Sarah Chen</h4>
-                                <div style="color: #6b7280; font-size: 14px;">Physics Tutor</div>
-                            </div>
-                        </div>
-                        <div style="margin-bottom: 25px;">
-                            <div class="summary-row"><span style="color: #6b7280;">Date & Time</span><span class="summary-value" id="summary-time">Tomorrow, 3:00 PM</span></div>
-                            <div class="summary-row"><span style="color: #6b7280;">Duration</span><span class="summary-value">60 minutes</span></div>
-                            <div class="summary-row"><span style="color: #6b7280;">Rate</span><span class="summary-value">$45/hour</span></div>
-                        </div>
-                        <div style="border-top: 2px solid #e5e7eb; padding-top: 20px;">
-                            <div class="summary-row"><span style="color: #1f2937; font-weight: 600;">Subtotal</span><span style="color: #1f2937; font-weight: 600;">$45.00</span></div>
-                            <div class="summary-row"><span style="color: #6b7280;">Platform fee (10%)</span><span style="color: #6b7280;">$4.50</span></div>
-                            <div class="summary-row" style="margin-bottom: 30px;"><span style="color: #1f2937; font-size: 20px; font-weight: 800;">Total</span><span style="color: #10b981; font-size: 20px; font-weight: 800;">$49.50</span></div>
-                        </div>
-                        <button class="btn-primary" data-navigate="dashboard"><i class="fas fa-lock"></i> Confirm & Pay Securely</button>
-                        <p style="text-align: center; color: #6b7280; font-size: 14px; margin-top: 15px;"><i class="fas fa-shield-alt"></i> Secure payment • 24-hour cancellation</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- screen 5: dashboard (tutor view) -->
-            <section id="dashboard" class="screen">
-                <div class="screen-title">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <span>Tutor Dashboard</span>
-                </div>
-                <p class="screen-subtitle">Manage your bookings, earnings, and schedule in one place.</p>
-                
-                <div class="dashboard-stats">
-                    <div class="stat-card"><div class="stat-value">$1,280</div><div class="stat-label">This Month's Earnings</div></div>
-                    <div class="stat-card"><div class="stat-value">24</div><div class="stat-label">Upcoming Sessions</div></div>
-                    <div class="stat-card"><div class="stat-value">4.9</div><div class="stat-label">Average Rating</div></div>
-                    <div class="stat-card"><div class="stat-value">96%</div><div class="stat-label">Booking Rate</div></div>
-                </div>
-                
-                <div class="upcoming-sessions">
-                    <h3 style="color: #1f2937; margin-bottom: 20px;">Today's Sessions</h3>
-                    <div class="session-item">
-                        <div><div style="font-weight: 600;">Alex Johnson</div><div style="color: #6b7280; font-size: 14px;">Physics • Quantum Mechanics</div></div>
-                        <div><div style="font-weight: 600;">3:00 PM - 4:00 PM</div><div style="color: #10b981; font-size: 14px;"><i class="fas fa-circle" style="font-size: 8px;"></i> Confirmed</div></div>
-                        <button class="nav-btn" style="background: #f3f4f6; color: #4f46e5;"><i class="fas fa-video"></i> Join</button>
-                    </div>
-                    <div class="session-item">
-                        <div><div style="font-weight: 600;">Maria Garcia</div><div style="color: #6b7280; font-size: 14px;">Physics • Thermodynamics</div></div>
-                        <div><div style="font-weight: 600;">5:30 PM - 6:30 PM</div><div style="color: #f59e0b; font-size: 14px;"><i class="fas fa-circle" style="font-size: 8px;"></i> Pending Payment</div></div>
-                        <button class="nav-btn" style="background: #f3f4f6; color: #4f46e5;"><i class="fas fa-envelope"></i> Message</button>
-                    </div>
-                    <div class="session-item">
-                        <div><div style="font-weight: 600;">David Kim</div><div style="color: #6b7280; font-size: 14px;">Physics • Exam Prep</div></div>
-                        <div><div style="font-weight: 600;">7:00 PM - 8:00 PM</div><div style="color: #10b981; font-size: 14px;"><i class="fas fa-circle" style="font-size: 8px;"></i> Confirmed</div></div>
-                        <button class="nav-btn" style="background: #f3f4f6; color: #4f46e5;"><i class="fas fa-calendar"></i> Reschedule</button>
-                    </div>
-                </div>
-                
-                <div style="display: flex; justify-content: center; margin-top: 40px;">
-                    <button class="btn-primary" style="width: auto; padding: 15px 40px;" data-navigate="onboarding"><i class="fas fa-redo"></i> Restart Demo</button>
+                <p class="screen-subtitle">Choose where you want to start.</p>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px;">
+                    <a class="btn-primary" style="width: auto; padding: 15px 30px;" href="./pages/onboarding.html">Get Started</a>
+                    <a class="btn-primary" style="width: auto; padding: 15px 30px;" href="./pages/search.html">Find a Tutor</a>
                 </div>
             </section>
         </main>
     </div>
     
     <footer class="demo-footer">
-        Tutorly Demo • Platform Pitch Presentation • All data is simulated for demonstration purposes
+        Tutorly • Built for reliable tutor discovery and booking
     </footer>
 
     <!-- external JavaScript file -->
