@@ -23,6 +23,8 @@
                 <button class="nav-btn" data-screen="profile" type="button">Profile</button>
                 <button class="nav-btn" data-screen="booking" type="button">Book Session</button>
                 <button class="nav-btn" data-screen="dashboard" type="button">Dashboard</button>
+                <button class="nav-btn" data-screen="admin" type="button"><i class="fas fa-shield-alt"></i> Admin</button>
+                <button class="nav-btn nav-signout" id="nav-signout" type="button" style="display:none"><i class="fas fa-sign-out-alt"></i> Sign out</button>
             </nav>
         </header>
 
@@ -34,62 +36,7 @@
                 </div>
                 <p class="screen-subtitle">View tutor details, subjects, availability, and reviews before booking.</p>
                 
-                <div class="profile-container">
-                    <aside class="profile-sidebar">
-                        <div class="profile-avatar-large">DR</div>
-                        <h2 style="text-align: center; color: #1f2937;">Dr. Sarah Chen</h2>
-                        <p style="text-align: center; color: #4f46e5; font-weight: 600;">PhD in Physics</p>
-                        <div class="profile-stats">
-                            <div class="stat"><div class="stat-value">4.7</div><div class="stat-label">Rating</div></div>
-                            <div class="stat"><div class="stat-value">128</div><div class="stat-label">Students</div></div>
-                            <div class="stat"><div class="stat-value">420+</div><div class="stat-label">Hours</div></div>
-                        </div>
-                        <div style="margin: 25px 0;">
-                            <h3 style="color: #1f2937; margin-bottom: 10px;">Subjects</h3>
-                            <div>
-                                <span class="subject-tag">Physics</span>
-                                <span class="subject-tag">Quantum Mechanics</span>
-                                <span class="subject-tag">Thermodynamics</span>
-                                <span class="subject-tag">Electromagnetism</span>
-                                <span class="subject-tag">Classical Mechanics</span>
-                            </div>
-                        </div>
-                        <div style="margin: 25px 0;">
-                            <h3 style="color: #1f2937; margin-bottom: 10px;">Hourly Rate</h3>
-                            <div style="font-size: 32px; font-weight: 800; color: #10b981;">$45/hr</div>
-                        </div>
-                        <button class="btn-primary" data-navigate="booking"><i class="fas fa-calendar-check"></i> Book Session</button>
-                    </aside>
-                    <div class="profile-main">
-                        <h3 style="color: #1f2937; margin-bottom: 15px;">About</h3>
-                        <p style="color: #6b7280; line-height: 1.6; margin-bottom: 25px;">
-                            I hold a PhD in Theoretical Physics from Stanford University and have been teaching physics for over 8 years. 
-                            Currently, I'm a lecturer at the University of Toronto. My teaching approach focuses on building intuitive 
-                            understanding before diving into complex mathematics. I've helped over 120 students improve their grades 
-                            by at least one letter grade.
-                        </p>
-                        <h3 style="color: #1f2937; margin-bottom: 15px;">Availability</h3>
-                        <p style="color: #6b7280; margin-bottom: 25px;">
-                            <i class="fas fa-calendar-alt" style="color: #4f46e5;"></i> 
-                            <strong>Next available:</strong> Tomorrow, 2:00 PM - 4:00 PM
-                        </p>
-                        <h3 style="color: #1f2937; margin-bottom: 15px;">Recent Reviews</h3>
-                        <div class="review-card">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                                <strong style="color: #1f2937;">James Wilson</strong>
-                                <div style="color: #f59e0b;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-                            </div>
-                            <p style="color: #6b7280;">\"Dr. Chen helped me understand quantum mechanics concepts that had confused me for months. My grade improved from C+ to A-.\"</p>
-                        </div>
-                        <div class="review-card">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                                <strong style="color: #1f2937;">Priya Sharma</strong>
-                                <div style="color: #f59e0b;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-                            </div>
-                            <p style="color: #6b7280;">\"Excellent tutor! She breaks down complex problems into manageable steps. Highly recommended for university-level physics.\"</p>
-                        </div>
-                    </div>
-                </div>
+                <div class="profile-container" id="profile-content"></div>
             </section>
         </main>
     </div>

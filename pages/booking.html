@@ -23,6 +23,8 @@
                 <button class="nav-btn" data-screen="profile" type="button">Profile</button>
                 <button class="nav-btn" data-screen="booking" type="button">Book Session</button>
                 <button class="nav-btn" data-screen="dashboard" type="button">Dashboard</button>
+                <button class="nav-btn" data-screen="admin" type="button"><i class="fas fa-shield-alt"></i> Admin</button>
+                <button class="nav-btn nav-signout" id="nav-signout" type="button" style="display:none"><i class="fas fa-sign-out-alt"></i> Sign out</button>
             </nav>
         </header>
 
@@ -64,22 +66,22 @@
                     </div>
                     <div class="booking-summary">
                         <h3 style="color: #1f2937; margin-bottom: 20px;">Booking Summary</h3>
-                        <div style="display: flex; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb;">
-                            <div class="tutor-avatar" style="width: 50px; height: 50px; font-size: 18px;">DR</div>
+                        <div id="booking-tutor-summary" style="display: flex; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb;">
+                            <div class="tutor-avatar" style="width: 50px; height: 50px; font-size: 18px;">—</div>
                             <div style="margin-left: 15px;">
-                                <h4 style="color: #1f2937;">Dr. Sarah Chen</h4>
-                                <div style="color: #6b7280; font-size: 14px;">Physics Tutor</div>
+                                <h4 style="color: #1f2937;">Select a tutor</h4>
+                                <div style="color: #6b7280; font-size: 14px;">—</div>
                             </div>
                         </div>
                         <div style="margin-bottom: 25px;">
                             <div class="summary-row"><span style="color: #6b7280;">Date & Time</span><span class="summary-value" id="summary-time">Tomorrow, 3:00 PM</span></div>
                             <div class="summary-row"><span style="color: #6b7280;">Duration</span><span class="summary-value">60 minutes</span></div>
-                            <div class="summary-row"><span style="color: #6b7280;">Rate</span><span class="summary-value">$45/hour</span></div>
+                            <div class="summary-row"><span style="color: #6b7280;">Rate</span><span class="summary-value" id="booking-rate">$0/hour</span></div>
                         </div>
                         <div style="border-top: 2px solid #e5e7eb; padding-top: 20px;">
-                            <div class="summary-row"><span style="color: #1f2937; font-weight: 600;">Subtotal</span><span style="color: #1f2937; font-weight: 600;">$45.00</span></div>
-                            <div class="summary-row"><span style="color: #6b7280;">Platform fee (10%)</span><span style="color: #6b7280;">$4.50</span></div>
-                            <div class="summary-row" style="margin-bottom: 30px;"><span style="color: #1f2937; font-size: 20px; font-weight: 800;">Total</span><span style="color: #10b981; font-size: 20px; font-weight: 800;">$49.50</span></div>
+                            <div class="summary-row"><span style="color: #1f2937; font-weight: 600;">Subtotal</span><span style="color: #1f2937; font-weight: 600;" id="booking-subtotal">$0.00</span></div>
+                            <div class="summary-row"><span style="color: #6b7280;">Platform fee (10%)</span><span style="color: #6b7280;" id="booking-fee">$0.00</span></div>
+                            <div class="summary-row" style="margin-bottom: 30px;"><span style="color: #1f2937; font-size: 20px; font-weight: 800;">Total</span><span style="color: #10b981; font-size: 20px; font-weight: 800;" id="booking-total">$0.00</span></div>
                         </div>
                         <button class="btn-primary" data-navigate="dashboard"><i class="fas fa-lock"></i> Confirm & Pay Securely</button>
                         <p style="text-align: center; color: #6b7280; font-size: 14px; margin-top: 15px;"><i class="fas fa-shield-alt"></i> Secure payment • 24-hour cancellation</p>

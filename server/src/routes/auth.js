@@ -1,6 +1,7 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import { createUser, findUserByEmail } from "../repositories/userRepo.js";
+import { createTutor, findTutorByUserId } from "../repositories/tutorRepo.js";
 import { requireAuth } from "../middleware/auth.js";
 import { signAccessToken } from "../utils/jwt.js";
 
@@ -31,12 +32,26 @@ authRouter.post("/register", async (req, res) => {
     return res.status(400).json({ error: "VALIDATION_ERROR", message: "password must be at least 8 characters" });
   }
   if (!normalizedRole) {
-    return res.status(400).json({ error: "VALIDATION_ERROR", message: "role must be student, tutor, or admin" });
+    return res.status(400).json({ error: "VALIDATION_ERROR", message: "role must be student or tutor" });
+  }
+  if (normalizedRole === "admin") {
+    return res.status(400).json({ error: "VALIDATION_ERROR", message: "Admin accounts cannot be created via registration" });
   }
 
   try {
     const passwordHash = await bcrypt.hash(password, 10);
     const user = createUser({ fullName, email, passwordHash, role: normalizedRole });
+
+    if (normalizedRole === "tutor") {
+      createTutor({
+        userId: user.id,
+        bio: "",
+        hourlyRate: 0,
+        subjects: [],
+        yearsExperience: 0,
+      });
+    }
+
     const token = signAccessToken({ sub: user.id, role: user.role });
 
     return res.status(201).json({
@@ -71,14 +86,33 @@ authRouter.post("/login", async (req, res) => {
     return res.status(401).json({ error: "INVALID_CREDENTIALS", message: "Invalid email or password" });
   }
 
+  let tutorProfile = null;
+  if (user.role === "tutor") {
+    tutorProfile = findTutorByUserId(user.id);
+  }
+
   const token = signAccessToken({ sub: user.id, role: user.role });
   return res.json({
     token,
-    user: { id: user.id, fullName: user.fullName, email: user.email, role: user.role },
+    user: {
+      id: user.id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+      tutorVerification: tutorProfile?.verificationStatus ?? null,
+    },
   });
 });
 
-authRouter.get("/me", requireAuth, (req, res) => {
-  return res.json({ user: req.user });
+authRouter.get("/me", requireAuth, async (req, res) => {
+  const { findTutorByUserId } = await import("../repositories/tutorRepo.js");
+  let tutorVerification = null;
+  if (req.user.role === "tutor") {
+    const t = findTutorByUserId(req.user.id);
+    tutorVerification = t?.verificationStatus ?? null;
+  }
+  return res.json({
+    user: { ...req.user, tutorVerification },
+  });
 });
 

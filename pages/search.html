@@ -23,6 +23,8 @@
                 <button class="nav-btn" data-screen="profile" type="button">Profile</button>
                 <button class="nav-btn" data-screen="booking" type="button">Book Session</button>
                 <button class="nav-btn" data-screen="dashboard" type="button">Dashboard</button>
+                <button class="nav-btn" data-screen="admin" type="button"><i class="fas fa-shield-alt"></i> Admin</button>
+                <button class="nav-btn nav-signout" id="nav-signout" type="button" style="display:none"><i class="fas fa-sign-out-alt"></i> Sign out</button>
             </nav>
         </header>
 
@@ -36,75 +38,25 @@
                 
                 <div class="search-container">
                     <div class="search-bar">
-                        <input type="text" class="search-input" placeholder="Search by subject or tutor name..." value="Physics">
-                        <select class="filter-select">
-                            <option>All Subjects</option>
-                            <option selected>Physics</option>
-                            <option>Mathematics</option>
-                            <option>Chemistry</option>
+                        <input type="text" id="search-query" class="search-input" placeholder="Search by subject or tutor name...">
+                        <select id="search-subject" class="filter-select">
+                            <option value="">All Subjects</option>
                         </select>
-                        <select class="filter-select">
-                            <option>Any Price</option>
-                            <option selected>$20-$40/hr</option>
-                            <option>$40-$60/hr</option>
-                            <option>$60+/hr</option>
+                        <select id="search-price" class="filter-select">
+                            <option value="">Any Price</option>
+                            <option value="20-40">$20–$40/hr</option>
+                            <option value="40-60">$40–$60/hr</option>
+                            <option value="60+">$60+/hr</option>
                         </select>
-                        <button class="btn-primary" style="width: auto; padding: 15px 30px;">
+                        <button class="btn-primary" id="search-btn" style="width: auto; padding: 15px 30px;">
                             <i class="fas fa-search"></i> Search
                         </button>
                     </div>
                 </div>
-                
-                <div class="tutor-grid">
-                    <div class="tutor-card" data-navigate="profile">
-                        <div class="tutor-header">
-                            <div class="tutor-avatar">DR</div>
-                            <div class="tutor-info">
-                                <h3>Dr. Sarah Chen</h3>
-                                <div class="tutor-subject">PhD in Physics • 8 years experience</div>
-                            </div>
-                        </div>
-                        <div class="tutor-rating">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-                            <span style="color: #6b7280; margin-left: 5px;">4.7 (128 reviews)</span>
-                        </div>
-                        <p style="color: #6b7280; margin: 10px 0;">Specializes in quantum mechanics and thermodynamics. University lecturer with proven track record.</p>
-                        <div class="tutor-price">$45/hr</div>
-                        <div class="verification-badge"><i class="fas fa-check-circle"></i> Verified Tutor</div>
-                    </div>
-                    <div class="tutor-card" data-navigate="profile">
-                        <div class="tutor-header">
-                            <div class="tutor-avatar">MJ</div>
-                            <div class="tutor-info">
-                                <h3>Michael Johnson</h3>
-                                <div class="tutor-subject">MSc Physics • 5 years experience</div>
-                            </div>
-                        </div>
-                        <div class="tutor-rating">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                            <span style="color: #6b7280; margin-left: 5px;">5.0 (64 reviews)</span>
-                        </div>
-                        <p style="color: #6b7280; margin: 10px 0;">High school physics specialist. Makes complex concepts easy to understand.</p>
-                        <div class="tutor-price">$35/hr</div>
-                        <div class="verification-badge"><i class="fas fa-check-circle"></i> Verified Tutor</div>
-                    </div>
-                    <div class="tutor-card" data-navigate="profile">
-                        <div class="tutor-header">
-                            <div class="tutor-avatar">RP</div>
-                            <div class="tutor-info">
-                                <h3>Rebecca Patel</h3>
-                                <div class="tutor-subject">BEng Physics • 3 years experience</div>
-                            </div>
-                        </div>
-                        <div class="tutor-rating">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                            <span style="color: #6b7280; margin-left: 5px;">4.9 (42 reviews)</span>
-                        </div>
-                        <p style="color: #6b7280; margin: 10px 0;">Expert in exam preparation and problem-solving techniques. Patient and encouraging.</p>
-                        <div class="tutor-price">$28/hr</div>
-                        <div class="verification-badge"><i class="fas fa-check-circle"></i> Verified Tutor</div>
-                    </div>
-                </div>
+
+                <div id="search-loading" class="search-loading" style="display:none;">Loading tutors...</div>
+                <div id="search-empty" class="search-empty" style="display:none;">No tutors found. Try different filters.</div>
+                <div class="tutor-grid" id="tutor-grid"></div>
             </section>
         </main>
     </div>

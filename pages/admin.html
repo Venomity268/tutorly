@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorly — Admin Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/admin.css">
+</head>
+<body>
+    <h1 class="page-title">Tutorly</h1>
+    <p class="page-subtitle">Admin Portal</p>
+
+    <div class="demo-container">
+        <header class="demo-header">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <span>Admin</span>
+            </div>
+            <nav class="demo-nav">
+                <a class="nav-btn" href="./search.html"><i class="fas fa-home"></i> Home</a>
+                <button class="nav-btn" id="admin-logout" type="button"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+            </nav>
+        </header>
+
+        <main class="demo-content admin-content">
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-tab="overview">Overview</button>
+                <button class="admin-tab" data-tab="tutors">Tutors</button>
+                <button class="admin-tab" data-tab="courses">Courses</button>
+                <button class="admin-tab" data-tab="reset">Reset Password</button>
+            </div>
+
+            <div id="admin-overview" class="admin-panel active">
+                <h2 class="admin-panel-title"><i class="fas fa-chart-pie"></i> Dashboard</h2>
+                <div class="admin-stats-grid" id="admin-stats"></div>
+                <div class="admin-pending" id="admin-pending-section">
+                    <h3>Pending Tutor Approvals</h3>
+                    <div id="admin-pending-list"></div>
+                </div>
+            </div>
+
+            <div id="admin-tutors" class="admin-panel">
+                <h2 class="admin-panel-title"><i class="fas fa-user-tie"></i> Tutor Management</h2>
+                <div class="admin-filter">
+                    <select id="tutor-status-filter">
+                        <option value="">All</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Subjects</th>
+                                <th>Rate</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tutors-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="admin-courses" class="admin-panel">
+                <h2 class="admin-panel-title"><i class="fas fa-book"></i> Courses</h2>
+                <div class="admin-form-inline">
+                    <input type="text" id="new-course-name" placeholder="Course name">
+                    <input type="text" id="new-course-slug" placeholder="Slug (optional)">
+                    <button class="btn-primary" id="add-course-btn" style="width:auto"><i class="fas fa-plus"></i> Add</button>
+                </div>
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Slug</th>
+                                <th>Active</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="courses-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="admin-reset" class="admin-panel">
+                <h2 class="admin-panel-title"><i class="fas fa-key"></i> Reset User Password</h2>
+                <div class="admin-form-card">
+                    <div class="form-group">
+                        <label class="form-label">User Email</label>
+                        <input type="email" id="reset-email" class="form-input" placeholder="user@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">New Password (min 8 characters)</label>
+                        <input type="password" id="reset-password" class="form-input" placeholder="New password">
+                    </div>
+                    <div id="reset-message" class="auth-error"></div>
+                    <button class="btn-primary" id="reset-submit"><i class="fas fa-save"></i> Reset Password</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="demo-footer">Tutorly Admin • Built for reliable tutor discovery and booking</footer>
+
+    <script src="../scripts/main.js"></script>
+    <script src="../scripts/admin.js"></script>
+</body>
+</html>

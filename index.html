@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tutorly — Find and book a tutor</title>
-    <!-- Font Awesome (kept as CDN for simplicity) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- main stylesheet (external) -->
     <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
-    <h1 class="page-title">Tutorly</h1>
-    <p class="page-subtitle">Find the right tutor. Book in minutes.</p>
-    
+    <div class="hero-banner">
+        <h1 class="page-title">Tutorly</h1>
+        <p class="page-subtitle">Find the right tutor. Book in minutes.</p>
+    </div>
+
     <div class="demo-container">
         <!-- header with navigation (semantic) -->
         <header class="demo-header">
@@ -32,13 +32,13 @@
         <main class="demo-content">
             <section class="screen active">
                 <div class="screen-title">
-                    <i class="fas fa-link"></i>
-                    <span>Welcome</span>
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Welcome to Tutorly</span>
                 </div>
-                <p class="screen-subtitle">Choose where you want to start.</p>
-                <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px;">
-                    <a class="btn-primary" style="width: auto; padding: 15px 30px;" href="./pages/onboarding.html">Get Started</a>
-                    <a class="btn-primary" style="width: auto; padding: 15px 30px;" href="./pages/search.html">Find a Tutor</a>
+                <p class="screen-subtitle">Connect with qualified tutors. Sign in or create an account to get started.</p>
+                <div class="landing-actions">
+                    <a class="btn-primary" href="/pages/onboarding.html?mode=login"><i class="fas fa-sign-in-alt"></i> Sign In</a>
+                    <a class="btn-secondary" href="/pages/onboarding.html?mode=register"><i class="fas fa-user-plus"></i> Create Account</a>
                 </div>
             </section>
         </main>
@@ -51,7 +51,5 @@
     <!-- external JavaScript file -->
     <script src="scripts/main.js"></script>
 
-    <!-- embedded style to show that we have separate CSS files (just a comment in code) 
-         but actual CSS is linked: styles/main.css -->
 </body>
 </html>

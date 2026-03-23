@@ -8,9 +8,11 @@
     <link rel="stylesheet" href="../styles/main.css">
 </head>
 <body>
-    <h1 class="page-title">Tutorly</h1>
-    <p class="page-subtitle">Find the right tutor. Book in minutes.</p>
-    
+    <div class="hero-banner">
+        <h1 class="page-title">Tutorly</h1>
+        <p class="page-subtitle">Find the right tutor. Book in minutes.</p>
+    </div>
+
     <div class="demo-container">
         <header class="demo-header">
             <div class="logo">
@@ -23,6 +25,8 @@
                 <button class="nav-btn" data-screen="profile" type="button">Profile</button>
                 <button class="nav-btn" data-screen="booking" type="button">Book Session</button>
                 <button class="nav-btn" data-screen="dashboard" type="button">Dashboard</button>
+                <button class="nav-btn" data-screen="admin" type="button"><i class="fas fa-shield-alt"></i> Admin</button>
+                <button class="nav-btn nav-signout" id="nav-signout" type="button" style="display:none"><i class="fas fa-sign-out-alt"></i> Sign out</button>
             </nav>
         </header>
 
@@ -33,35 +37,90 @@
                     <span>Dashboard</span>
                 </div>
                 <p class="screen-subtitle">Manage your sessions and schedule in one place.</p>
-                
-                <div class="dashboard-stats">
-                    <div class="stat-card"><div class="stat-value">$1,280</div><div class="stat-label">This Month's Earnings</div></div>
-                    <div class="stat-card"><div class="stat-value">24</div><div class="stat-label">Upcoming Sessions</div></div>
-                    <div class="stat-card"><div class="stat-value">4.9</div><div class="stat-label">Average Rating</div></div>
-                    <div class="stat-card"><div class="stat-value">96%</div><div class="stat-label">Booking Rate</div></div>
+
+                <!-- Tutor dashboard (loaded by JS) -->
+                <div id="dashboard-tutor" style="display: none;">
+                    <div class="dashboard-profile-bar">
+                        <div class="dashboard-profile-summary">
+                            <div class="tutor-avatar" id="dashboard-avatar">—</div>
+                            <div>
+                                <h3 id="dashboard-name" style="margin: 0 0 4px;">—</h3>
+                                <p id="dashboard-subjects" style="color: #64748b; font-size: 0.9rem; margin: 0;">—</p>
+                                <span class="verification-badge" id="dashboard-status">—</span>
+                            </div>
+                            <button class="btn-secondary" id="dashboard-edit-btn" type="button" style="margin-left: auto;"><i class="fas fa-edit"></i> Edit Profile</button>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-stats" id="dashboard-stats">
+                        <div class="stat-card"><div class="stat-value" id="stat-earnings">$0</div><div class="stat-label">This Month's Earnings</div></div>
+                        <div class="stat-card"><div class="stat-value" id="stat-upcoming">0</div><div class="stat-label">Upcoming Sessions</div></div>
+                        <div class="stat-card"><div class="stat-value" id="stat-rating">—</div><div class="stat-label">Average Rating</div></div>
+                        <div class="stat-card"><div class="stat-value" id="stat-rate">—</div><div class="stat-label">Booking Rate</div></div>
+                    </div>
+
+                    <div class="upcoming-sessions">
+                        <h3 style="color: #1f2937; margin-bottom: 20px;">Upcoming Sessions</h3>
+                        <div id="dashboard-sessions-list">
+                            <p class="search-empty">No upcoming sessions</p>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="upcoming-sessions">
-                    <h3 style="color: #1f2937; margin-bottom: 20px;">Today's Sessions</h3>
-                    <div class="session-item">
-                        <div><div style="font-weight: 600;">Alex Johnson</div><div style="color: #6b7280; font-size: 14px;">Physics • Quantum Mechanics</div></div>
-                        <div><div style="font-weight: 600;">3:00 PM - 4:00 PM</div><div style="color: #10b981; font-size: 14px;"><i class="fas fa-circle" style="font-size: 8px;"></i> Confirmed</div></div>
-                        <button class="nav-btn" style="background: #f3f4f6; color: #4f46e5;"><i class="fas fa-video"></i> Join</button>
-                    </div>
-                    <div class="session-item">
-                        <div><div style="font-weight: 600;">Maria Garcia</div><div style="color: #6b7280; font-size: 14px;">Physics • Thermodynamics</div></div>
-                        <div><div style="font-weight: 600;">5:30 PM - 6:30 PM</div><div style="color: #f59e0b; font-size: 14px;"><i class="fas fa-circle" style="font-size: 8px;"></i> Pending Payment</div></div>
-                        <button class="nav-btn" style="background: #f3f4f6; color: #4f46e5;"><i class="fas fa-envelope"></i> Message</button>
-                    </div>
-                    <div class="session-item">
-                        <div><div style="font-weight: 600;">David Kim</div><div style="color: #6b7280; font-size: 14px;">Physics • Exam Prep</div></div>
-                        <div><div style="font-weight: 600;">7:00 PM - 8:00 PM</div><div style="color: #10b981; font-size: 14px;"><i class="fas fa-circle" style="font-size: 8px;"></i> Confirmed</div></div>
-                        <button class="nav-btn" style="background: #f3f4f6; color: #4f46e5;"><i class="fas fa-calendar"></i> Reschedule</button>
+
+                <!-- Student dashboard (when not a tutor) -->
+                <div id="dashboard-student" style="display: none;">
+                    <div class="dashboard-student-card">
+                        <i class="fas fa-search" style="font-size: 2.5rem; color: #0ea5e9; margin-bottom: 16px;"></i>
+                        <h3 style="color: #0f172a; margin-bottom: 8px;">Find a Tutor</h3>
+                        <p style="color: #64748b; margin-bottom: 20px;">Browse qualified tutors and book your first session.</p>
+                        <a class="btn-primary" href="/pages/search.html" style="width: auto; padding: 14px 32px;"><i class="fas fa-search"></i> Find Tutor</a>
                     </div>
                 </div>
-                
-                <div style="display: flex; justify-content: center; margin-top: 40px;">
-                    <a class="btn-primary" style="width: auto; padding: 15px 40px;" href="./onboarding.html"><i class="fas fa-redo"></i> Start Over</a>
+
+                <!-- Edit Profile Modal -->
+                <div id="edit-profile-modal" class="modal-overlay" style="display: none;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Edit Profile</h3>
+                            <button type="button" class="modal-close" id="edit-profile-close" aria-label="Close">&times;</button>
+                        </div>
+                        <form id="edit-profile-form">
+                            <div class="form-group">
+                                <label class="form-label" for="edit-fullName">Full Name</label>
+                                <input id="edit-fullName" type="text" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="edit-bio">Bio</label>
+                                <textarea id="edit-bio" class="form-input" rows="3" placeholder="Tell students about yourself"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="edit-hourlyRate">Hourly Rate ($)</label>
+                                <input id="edit-hourlyRate" type="number" class="form-input" min="0" step="5">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="edit-yearsExperience">Years of Experience</label>
+                                <input id="edit-yearsExperience" type="number" class="form-input" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Subjects</label>
+                                <div id="edit-subjects-wrap" class="edit-subjects-chips"></div>
+                                <select id="edit-subjects-add" class="form-input" style="margin-top: 8px;">
+                                    <option value="">Add a subject</option>
+                                    <option value="mathematics">Mathematics</option>
+                                    <option value="physics">Physics</option>
+                                    <option value="chemistry">Chemistry</option>
+                                    <option value="english">English</option>
+                                    <option value="computer-science">Computer Science</option>
+                                    <option value="biology">Biology</option>
+                                </select>
+                            </div>
+                            <div id="edit-profile-error" class="auth-error" role="alert"></div>
+                            <div class="modal-actions">
+                                <button type="button" class="btn-secondary" id="edit-profile-cancel">Cancel</button>
+                                <button type="submit" class="btn-primary">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </section>
         </main>

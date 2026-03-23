@@ -44,3 +44,28 @@ export function findUserById(id) {
   return user ? { ...user } : null;
 }
 
+export function listUsers() {
+  return Array.from(usersById.values()).map((u) => ({
+    id: u.id,
+    fullName: u.fullName,
+    email: u.email,
+    role: u.role,
+    status: u.status,
+    createdAt: u.createdAt,
+  }));
+}
+
+export function updatePassword(userId, passwordHash) {
+  const user = usersById.get(userId);
+  if (!user) return null;
+  user.passwordHash = passwordHash;
+  return { ...user };
+}
+
+export function updateUser(userId, updates) {
+  const user = usersById.get(userId);
+  if (!user) return null;
+  if (updates.fullName !== undefined) user.fullName = String(updates.fullName || "").trim();
+  return { ...user };
+}
+
