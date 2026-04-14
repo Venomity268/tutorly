@@ -18,21 +18,52 @@ const SCREEN_TO_PAGE = {
 
 const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:8787`;
 
+const AUTH_TOKEN_KEY = 'tutorly_token';
+const AUTH_USER_KEY = 'tutorly_user';
+
+function readStoredAuthRaw() {
+    let token = localStorage.getItem(AUTH_TOKEN_KEY);
+    let userRaw = localStorage.getItem(AUTH_USER_KEY);
+    if (!token || !userRaw) {
+        token = token || sessionStorage.getItem(AUTH_TOKEN_KEY);
+        userRaw = userRaw || sessionStorage.getItem(AUTH_USER_KEY);
+    }
+    return { token, userRaw };
+}
+
 function getAuth() {
-    const token = sessionStorage.getItem('tutorly_token');
-    const userRaw = sessionStorage.getItem('tutorly_user');
-    const user = userRaw ? JSON.parse(userRaw) : null;
+    const { token, userRaw } = readStoredAuthRaw();
+    let user = null;
+    if (userRaw) {
+        try {
+            user = JSON.parse(userRaw);
+        } catch {
+            user = null;
+        }
+    }
     return { token, user };
 }
 
 function setAuth({ token, user }) {
-    sessionStorage.setItem('tutorly_token', token);
-    sessionStorage.setItem('tutorly_user', JSON.stringify(user));
+    const userJson = JSON.stringify(user);
+    localStorage.setItem(AUTH_TOKEN_KEY, token);
+    localStorage.setItem(AUTH_USER_KEY, userJson);
+    sessionStorage.removeItem(AUTH_TOKEN_KEY);
+    sessionStorage.removeItem(AUTH_USER_KEY);
 }
 
 function clearAuth() {
-    sessionStorage.removeItem('tutorly_token');
-    sessionStorage.removeItem('tutorly_user');
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_USER_KEY);
+    sessionStorage.removeItem(AUTH_TOKEN_KEY);
+    sessionStorage.removeItem(AUTH_USER_KEY);
+}
+
+function landingScreenForUser(user) {
+    if (!user?.role) return 'search';
+    if (user.role === 'admin') return 'admin';
+    if (user.role === 'tutor') return 'dashboard';
+    return 'search';
 }
 
 function getFlowState() {
@@ -106,7 +137,7 @@ function enforceRouteGuard(currentScreen) {
 
     // Signed-in users: redirect index and onboarding to their main page
     if (token && user && (currentScreen === 'index' || currentScreen === 'onboarding')) {
-        const mainPage = user.role === 'admin' ? 'admin' : 'dashboard';
+        const mainPage = landingScreenForUser(user);
         sessionStorage.setItem('tutorly_last_screen', mainPage);
         window.location.replace(SCREEN_TO_PAGE[mainPage]);
         return;
@@ -168,6 +199,13 @@ async function apiRequest(path, { method = 'GET', body = undefined, auth = true 
 
     const data = await res.json().catch(() => null);
     if (!res.ok) {
+        if (res.status === 401 && auth) {
+            clearAuth();
+            const screen = getCurrentScreenIdFromPath();
+            if (screen && screen !== 'onboarding' && screen !== 'index') {
+                window.location.replace(SCREEN_TO_PAGE.onboarding);
+            }
+        }
         const message = data?.message || data?.error || 'Request failed';
         const err = new Error(message);
         err.status = res.status;

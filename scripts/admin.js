@@ -1,18 +1,31 @@
 (function () {
   const API_BASE = `${window.location.protocol}//${window.location.hostname}:8787`;
+  const AUTH_TOKEN_KEY = "tutorly_token";
+  const AUTH_USER_KEY = "tutorly_user";
 
   function getToken() {
-    return sessionStorage.getItem("tutorly_token");
+    return localStorage.getItem(AUTH_TOKEN_KEY) ?? sessionStorage.getItem(AUTH_TOKEN_KEY);
   }
 
   function getUser() {
-    const raw = sessionStorage.getItem("tutorly_user");
-    return raw ? JSON.parse(raw) : null;
+    const raw = localStorage.getItem(AUTH_USER_KEY) ?? sessionStorage.getItem(AUTH_USER_KEY);
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  function clearStoredAuth() {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_USER_KEY);
+    sessionStorage.removeItem(AUTH_TOKEN_KEY);
+    sessionStorage.removeItem(AUTH_USER_KEY);
   }
 
   function redirectToLogin() {
-    sessionStorage.removeItem("tutorly_token");
-    sessionStorage.removeItem("tutorly_user");
+    clearStoredAuth();
     window.location.replace("./onboarding.html?mode=login");
   }
 
@@ -28,6 +41,11 @@
       body: opts.body ? JSON.stringify(opts.body) : undefined,
     });
     const data = await res.json().catch(() => ({}));
+    if (res.status === 401) {
+      clearStoredAuth();
+      window.location.replace("./onboarding.html?mode=login");
+      throw new Error(data.message || data.error || "Session expired");
+    }
     if (!res.ok) throw new Error(data.message || data.error || "Request failed");
     return data;
   }
