@@ -659,6 +659,61 @@ body {
     border-color: #0ea5e9;
 }
 
+.time-slot.unavailable {
+    background: #f8fafc;
+    color: #94a3b8;
+    border-style: dashed;
+    cursor: not-allowed;
+}
+
+.time-slot.unavailable:hover {
+    border-color: #cbd5e1;
+}
+
+.time-slot.unavailable small {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.7rem;
+}
+
+.booking-slot-note {
+    margin-top: 10px;
+    color: #64748b;
+    font-size: 0.82rem;
+}
+
+.booking-slot-note i {
+    margin-right: 6px;
+}
+
+.booking-inline-error {
+    display: none;
+    margin-bottom: 12px;
+    background: #fef2f2;
+    color: #b91c1c;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.84rem;
+}
+
+.booking-inline-error.visible {
+    display: block;
+}
+
+.booking-confirmation {
+    display: none;
+    margin-top: 12px;
+    background: #ecfeff;
+    color: #0f766e;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.84rem;
+}
+
+.booking-confirmation.visible {
+    display: block;
+}
+
 .summary-row {
     display: flex;
     justify-content: space-between;

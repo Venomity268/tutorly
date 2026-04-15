@@ -253,6 +253,8 @@ function showScreen(screenId) {
  * @param {HTMLElement} element - The clicked time slot element
  */
 function selectTimeSlot(element) {
+    if (element.classList.contains('unavailable')) return false;
+
     // Remove selected class from all time slots
     document.querySelectorAll('.time-slot').forEach(slot => {
         slot.classList.remove('selected');
@@ -267,6 +269,8 @@ function selectTimeSlot(element) {
     if (summaryElement) {
         summaryElement.textContent = `Tomorrow, ${timeText}`;
     }
+
+    return true;
 }
 
 /**
@@ -311,7 +315,15 @@ function initializeEventListeners() {
     // Time slot selection
     document.querySelectorAll('.time-slot').forEach(slot => {
         slot.addEventListener('click', (e) => {
-            selectTimeSlot(slot);
+            const selected = selectTimeSlot(slot);
+            const bookingErrorEl = document.getElementById('booking-error');
+            if (!selected && bookingErrorEl) {
+                bookingErrorEl.textContent = 'That slot is no longer available. Please choose another time.';
+                bookingErrorEl.classList.add('visible');
+            } else if (bookingErrorEl) {
+                bookingErrorEl.textContent = '';
+                bookingErrorEl.classList.remove('visible');
+            }
         });
     });
     
@@ -879,12 +891,76 @@ document.addEventListener('DOMContentLoaded', () => {
         const summary = document.getElementById('booking-tutor-summary');
         const summaryRate = document.getElementById('booking-rate');
         const summaryTotal = document.getElementById('booking-total');
+        const summaryFee = document.getElementById('booking-fee');
+        const summarySubtotal = document.getElementById('booking-subtotal');
+        const summaryTime = document.getElementById('summary-time');
+        const summaryDuration = document.getElementById('summary-duration');
+        const confirmBtn = document.getElementById('booking-confirm-btn');
+        const bookingErrorEl = document.getElementById('booking-error');
+        const bookingConfirmationEl = document.getElementById('booking-confirmation');
+        const durationButtons = Array.from(document.querySelectorAll('[data-duration]'));
+        const slotEls = Array.from(document.querySelectorAll('.time-slot'));
         const { selectedTutor } = getFlowState();
+
+        function setBookingError(message) {
+            if (!bookingErrorEl) return;
+            bookingErrorEl.textContent = message || '';
+            bookingErrorEl.classList.toggle('visible', !!message);
+        }
+
+        function setBookingConfirmation(message) {
+            if (!bookingConfirmationEl) return;
+            bookingConfirmationEl.textContent = message || '';
+            bookingConfirmationEl.classList.toggle('visible', !!message);
+        }
+
+        function getSelectedDurationMinutes() {
+            const activeBtn = durationButtons.find(btn => btn.style.background === 'rgb(79, 70, 229)' || btn.style.background === '#4f46e5');
+            return Number(activeBtn?.dataset.duration || 30);
+        }
+
+        function updateBookingTotals(rate, durationMinutes) {
+            const subtotal = rate * (durationMinutes / 60);
+            const fee = Math.round(subtotal * 0.1 * 100) / 100;
+            const total = subtotal + fee;
+            if (summaryRate) summaryRate.textContent = '$' + rate + '/hour';
+            if (summarySubtotal) summarySubtotal.textContent = '$' + subtotal.toFixed(2);
+            if (summaryFee) summaryFee.textContent = '$' + fee.toFixed(2);
+            if (summaryTotal) summaryTotal.textContent = '$' + total.toFixed(2);
+        }
+
+        function refreshBookingSummary() {
+            const rate = selectedTutor?.hourlyRate || 0;
+            const selectedSlot = document.querySelector('.time-slot.selected');
+            const durationMinutes = getSelectedDurationMinutes();
+            if (summaryDuration) summaryDuration.textContent = `${durationMinutes} minutes`;
+            if (selectedSlot && summaryTime) {
+                summaryTime.textContent = `Tomorrow, ${selectedSlot.dataset.time || selectedSlot.textContent.trim()}`;
+            }
+            updateBookingTotals(rate, durationMinutes);
+        }
+
+        durationButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                setBookingError('');
+                setBookingConfirmation('');
+                refreshBookingSummary();
+            });
+        });
+
+        slotEls.forEach(slot => {
+            slot.addEventListener('click', () => {
+                if (!slot.classList.contains('unavailable')) {
+                    setBookingError('');
+                    setBookingConfirmation('');
+                    refreshBookingSummary();
+                }
+            });
+        });
+
         if (summary && selectedTutor) {
             const initials = (selectedTutor.fullName || 'T').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
             const rate = selectedTutor.hourlyRate || 0;
-            const fee = Math.round(rate * 0.1 * 100) / 100;
-            const total = rate + fee;
             summary.innerHTML = `
                 <div class="tutor-avatar" style="width:50px;height:50px;font-size:18px">${initials}</div>
                 <div style="margin-left:15px">
@@ -892,12 +968,39 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div style="color:#64748b;font-size:14px">${(selectedTutor.subjects || []).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ') || 'Tutor'}</div>
                 </div>
             `;
-            if (summaryRate) summaryRate.textContent = '$' + rate + '/hour';
-            if (summaryTotal) summaryTotal.textContent = '$' + total.toFixed(2);
-            const feeEl = document.getElementById('booking-fee');
-            const subtotalEl = document.getElementById('booking-subtotal');
-            if (feeEl) feeEl.textContent = '$' + fee.toFixed(2);
-            if (subtotalEl) subtotalEl.textContent = '$' + rate.toFixed(2);
+            refreshBookingSummary();
+        } else {
+            if (confirmBtn) confirmBtn.disabled = false;
+            setBookingError('Select a tutor from Find Tutor before confirming your booking.');
+        }
+
+        confirmBtn?.addEventListener('click', () => {
+            setBookingError('');
+            setBookingConfirmation('');
+
+            if (!selectedTutor) {
+                setBookingError('Choose a tutor first to continue with booking.');
+                return;
+            }
+
+            const selectedSlot = document.querySelector('.time-slot.selected');
+            if (!selectedSlot || selectedSlot.classList.contains('unavailable')) {
+                setBookingError('Please select an available time slot.');
+                return;
+            }
+
+            const durationMinutes = getSelectedDurationMinutes();
+            const timeLabel = selectedSlot.dataset.time || selectedSlot.textContent.trim();
+            confirmBtn.disabled = true;
+            confirmBtn.classList.add('is-loading');
+
+            window.setTimeout(() => {
+                setBookingConfirmation(`Confirmed for Tomorrow at ${timeLabel} (${durationMinutes} minutes). Redirecting to your dashboard...`);
+                confirmBtn.classList.remove('is-loading');
+                window.setTimeout(() => {
+                    navigateTo('dashboard');
+                }, 1100);
+            }, 500);
         }
     }
 
