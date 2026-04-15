@@ -46,7 +46,8 @@
                     <div id="auth-register-fields">
                         <div class="form-group">
                             <label class="form-label" for="auth-full-name">Full Name</label>
-                            <input id="auth-full-name" type="text" class="form-input" placeholder="Your name" autocomplete="name">
+                            <input id="auth-full-name" type="text" class="form-input" placeholder="Your name" autocomplete="name" aria-describedby="auth-full-name-error">
+                            <div id="auth-full-name-error" class="form-error" role="status" aria-live="polite"></div>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="auth-role">Account Type</label>
@@ -57,7 +58,7 @@
                         </div>
                         <div class="form-group" id="student-preferences">
                             <label class="form-label" for="student-subject">Subject</label>
-                            <select id="student-subject" class="form-input">
+                            <select id="student-subject" class="form-input" aria-describedby="student-subject-error">
                                 <option value="">Select subject</option>
                                 <option value="mathematics">Mathematics</option>
                                 <option value="physics">Physics</option>
@@ -65,25 +66,29 @@
                                 <option value="english">English</option>
                                 <option value="computer-science">Computer Science</option>
                             </select>
+                            <div id="student-subject-error" class="form-error" role="status" aria-live="polite"></div>
                         </div>
                         <div class="form-group" id="student-level-group">
                             <label class="form-label" for="student-level">Education Level</label>
-                            <select id="student-level" class="form-input">
+                            <select id="student-level" class="form-input" aria-describedby="student-level-error">
                                 <option value="">Select level</option>
                                 <option value="high-school">High School</option>
                                 <option value="university">University</option>
                                 <option value="graduate">Graduate</option>
                                 <option value="professional">Professional Development</option>
                             </select>
+                            <div id="student-level-error" class="form-error" role="status" aria-live="polite"></div>
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="auth-email">Email</label>
-                        <input id="auth-email" type="email" class="form-input" placeholder="you@example.com" autocomplete="email">
+                        <input id="auth-email" type="email" class="form-input" placeholder="you@example.com" autocomplete="email" aria-describedby="auth-email-error">
+                        <div id="auth-email-error" class="form-error" role="status" aria-live="polite"></div>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="auth-password">Password</label>
-                        <input id="auth-password" type="password" class="form-input" placeholder="At least 8 characters" autocomplete="current-password">
+                        <input id="auth-password" type="password" class="form-input" placeholder="At least 8 characters" autocomplete="current-password" aria-describedby="auth-password-error">
+                        <div id="auth-password-error" class="form-error" role="status" aria-live="polite"></div>
                     </div>
                     <p class="auth-switch-text" id="auth-switch-text">Already have an account? <button type="button" class="auth-link">Sign in</button></p>
                     <div id="auth-error" class="auth-error" role="alert"></div>

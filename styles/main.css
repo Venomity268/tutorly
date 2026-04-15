@@ -267,6 +267,29 @@ body {
     color: #94a3b8;
 }
 
+.form-input.is-invalid {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+.form-error {
+    min-height: 16px;
+    margin-top: 6px;
+    color: #b91c1c;
+    font-size: 0.78rem;
+    font-weight: 500;
+}
+
+.btn-primary.is-loading {
+    opacity: 0.85;
+    cursor: wait;
+}
+
+.btn-primary.is-loading::after {
+    content: '...';
+    margin-left: 8px;
+}
+
 .auth-switch-text {
     color: #64748b;
     font-size: 0.9rem;

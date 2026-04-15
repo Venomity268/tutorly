@@ -504,10 +504,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const emailEl = document.getElementById('auth-email');
         const passwordEl = document.getElementById('auth-password');
         const roleEl = document.getElementById('auth-role');
+        const studentSubjectEl = document.getElementById('student-subject');
+        const studentLevelEl = document.getElementById('student-level');
         const submitEl = document.getElementById('auth-submit');
         const errorEl = document.getElementById('auth-error');
         const switchText = document.getElementById('auth-switch-text');
         const switchBtn = document.getElementById('auth-switch-to-login');
+        const fieldErrorMap = {
+            fullName: document.getElementById('auth-full-name-error'),
+            email: document.getElementById('auth-email-error'),
+            password: document.getElementById('auth-password-error'),
+            studentSubject: document.getElementById('student-subject-error'),
+            studentLevel: document.getElementById('student-level-error'),
+        };
+        let isSubmittingAuth = false;
 
         const urlMode = new URLSearchParams(window.location.search).get('mode');
         let mode = (urlMode === 'login' || urlMode === 'register') ? urlMode : 'login';
@@ -518,7 +528,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 t.classList.toggle('active', t === (mode === 'register' ? modeRegisterBtn : modeLoginBtn));
             });
             if (registerFields) registerFields.style.display = mode === 'register' ? '' : 'none';
-            if (submitEl) submitEl.textContent = mode === 'register' ? 'Create Account' : 'Sign In';
+            if (submitEl && !isSubmittingAuth) submitEl.textContent = mode === 'register' ? 'Create Account' : 'Sign In';
             if (switchText) {
                 if (mode === 'register') {
                     switchText.innerHTML = 'Already have an account? <button type="button" class="auth-link">Sign in</button>';
@@ -527,6 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             if (roleEl) updateStudentPrefsVisibility();
+            clearAllFieldErrors();
         }
 
         function updateStudentPrefsVisibility() {
@@ -535,9 +546,102 @@ document.addEventListener('DOMContentLoaded', () => {
             if (studentLevelGroup) studentLevelGroup.style.display = mode === 'register' && isStudent ? '' : 'none';
         }
 
+        function setFieldError(fieldName, message) {
+            const fieldMap = {
+                fullName: fullNameEl,
+                email: emailEl,
+                password: passwordEl,
+                studentSubject: studentSubjectEl,
+                studentLevel: studentLevelEl,
+            };
+            const field = fieldMap[fieldName];
+            const errorNode = fieldErrorMap[fieldName];
+            if (!field || !errorNode) return;
+            errorNode.textContent = message || '';
+            field.classList.toggle('is-invalid', !!message);
+        }
+
+        function clearAllFieldErrors() {
+            Object.keys(fieldErrorMap).forEach(key => setFieldError(key, ''));
+        }
+
+        function validateField(fieldName) {
+            const email = emailEl?.value.trim() || '';
+            const password = passwordEl?.value || '';
+            const fullName = fullNameEl?.value.trim() || '';
+            const studentSubject = studentSubjectEl?.value || '';
+            const studentLevel = studentLevelEl?.value || '';
+            const isRegister = mode === 'register';
+            const isStudent = roleEl?.value === 'student';
+
+            if (fieldName === 'email') {
+                if (!email) return 'Email is required';
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Enter a valid email address';
+                return '';
+            }
+            if (fieldName === 'password') {
+                if (!password) return 'Password is required';
+                if (isRegister && password.length < 8) return 'Password must be at least 8 characters';
+                return '';
+            }
+            if (fieldName === 'fullName') {
+                if (isRegister && !fullName) return 'Full name is required';
+                return '';
+            }
+            if (fieldName === 'studentSubject') {
+                if (isRegister && isStudent && !studentSubject) return 'Select a subject';
+                return '';
+            }
+            if (fieldName === 'studentLevel') {
+                if (isRegister && isStudent && !studentLevel) return 'Select an education level';
+                return '';
+            }
+            return '';
+        }
+
+        function validateAuthForm() {
+            const fields = ['email', 'password'];
+            if (mode === 'register') {
+                fields.push('fullName');
+                if (roleEl?.value === 'student') {
+                    fields.push('studentSubject', 'studentLevel');
+                }
+            }
+
+            let isValid = true;
+            fields.forEach((name) => {
+                const message = validateField(name);
+                setFieldError(name, message);
+                if (message) isValid = false;
+            });
+            return isValid;
+        }
+
+        function setSubmittingState(isSubmitting) {
+            isSubmittingAuth = isSubmitting;
+            if (!submitEl) return;
+            submitEl.disabled = isSubmitting;
+            submitEl.classList.toggle('is-loading', isSubmitting);
+            submitEl.textContent = isSubmitting
+                ? (mode === 'register' ? 'Creating Account' : 'Signing In')
+                : (mode === 'register' ? 'Create Account' : 'Sign In');
+        }
+
         modeRegisterBtn?.addEventListener('click', () => { mode = 'register'; applyMode(); });
         modeLoginBtn?.addEventListener('click', () => { mode = 'login'; applyMode(); });
         roleEl?.addEventListener('change', updateStudentPrefsVisibility);
+        emailEl?.addEventListener('input', () => setFieldError('email', validateField('email')));
+        emailEl?.addEventListener('blur', () => setFieldError('email', validateField('email')));
+        passwordEl?.addEventListener('input', () => setFieldError('password', validateField('password')));
+        passwordEl?.addEventListener('blur', () => setFieldError('password', validateField('password')));
+        fullNameEl?.addEventListener('input', () => setFieldError('fullName', validateField('fullName')));
+        fullNameEl?.addEventListener('blur', () => setFieldError('fullName', validateField('fullName')));
+        studentSubjectEl?.addEventListener('change', () => setFieldError('studentSubject', validateField('studentSubject')));
+        studentLevelEl?.addEventListener('change', () => setFieldError('studentLevel', validateField('studentLevel')));
+        roleEl?.addEventListener('change', () => {
+            setFieldError('studentSubject', validateField('studentSubject'));
+            setFieldError('studentLevel', validateField('studentLevel'));
+        });
         switchText?.addEventListener('click', (e) => {
             if (e.target.closest?.('.auth-link') || e.target.classList?.contains('auth-link')) {
                 e.preventDefault();
@@ -550,6 +654,7 @@ document.addEventListener('DOMContentLoaded', () => {
         submitEl?.addEventListener('click', async () => {
             if (!emailEl || !passwordEl || !submitEl) return;
             if (errorEl) { errorEl.textContent = ''; errorEl.classList.remove('visible'); }
+            if (!validateAuthForm()) return;
 
             const email = emailEl.value.trim();
             const password = passwordEl.value;
@@ -557,7 +662,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const role = roleEl?.value ?? 'student';
 
             try {
-                submitEl.disabled = true;
+                setSubmittingState(true);
                 const payload = mode === 'register'
                     ? { fullName, email, password, role }
                     : { email, password };
@@ -585,7 +690,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     errorEl.classList.add('visible');
                 }
             } finally {
-                submitEl.disabled = false;
+                setSubmittingState(false);
             }
         });
     }
