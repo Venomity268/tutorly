@@ -396,6 +396,16 @@ body {
     flex-wrap: wrap;
 }
 
+.search-filter-summary {
+    margin-top: 10px;
+    color: #475569;
+    font-size: 0.85rem;
+}
+
+.search-filter-summary strong {
+    color: #0f172a;
+}
+
 .search-input {
     flex: 1;
     min-width: 200px;
@@ -424,6 +434,10 @@ body {
     text-align: center;
     padding: 36px 20px;
     color: #64748b;
+}
+
+.search-loading i {
+    margin-right: 8px;
 }
 
 /* ===== TUTOR CARDS ===== */

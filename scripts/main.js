@@ -697,17 +697,111 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Search page: load courses + tutors from API
     if (currentFromPath === 'search') {
+        const queryInput = document.getElementById('search-query');
         const subjectSelect = document.getElementById('search-subject');
+        const priceSelect = document.getElementById('search-price');
+        const searchBtn = document.getElementById('search-btn');
         const grid = document.getElementById('tutor-grid');
         const loadingEl = document.getElementById('search-loading');
         const emptyEl = document.getElementById('search-empty');
+        const filterSummaryEl = document.getElementById('search-filter-summary');
+        let allTutors = [];
+        let isSearching = false;
+
+        function setSearchLoading(isLoading) {
+            isSearching = isLoading;
+            if (loadingEl) loadingEl.style.display = isLoading ? 'block' : 'none';
+            if (searchBtn) {
+                searchBtn.disabled = isLoading;
+                searchBtn.classList.toggle('is-loading', isLoading);
+            }
+        }
+
+        function tutorMatchesPriceFilter(tutor, range) {
+            const hourlyRate = Number(tutor.hourlyRate || 0);
+            if (!range) return true;
+            if (range === '20-40') return hourlyRate >= 20 && hourlyRate <= 40;
+            if (range === '40-60') return hourlyRate >= 40 && hourlyRate <= 60;
+            if (range === '60+') return hourlyRate >= 60;
+            return true;
+        }
+
+        function updateFilterSummary(count) {
+            if (!filterSummaryEl) return;
+            const activeFilters = [];
+            if (queryInput?.value.trim()) activeFilters.push(`search: "${queryInput.value.trim()}"`);
+            if (subjectSelect?.value) {
+                const selectedSubjectLabel = subjectSelect.options[subjectSelect.selectedIndex]?.textContent || subjectSelect.value;
+                activeFilters.push(`subject: ${selectedSubjectLabel}`);
+            }
+            if (priceSelect?.value) {
+                const selectedPriceLabel = priceSelect.options[priceSelect.selectedIndex]?.textContent || priceSelect.value;
+                activeFilters.push(`price: ${selectedPriceLabel}`);
+            }
+            if (activeFilters.length === 0) {
+                filterSummaryEl.innerHTML = `Showing <strong>${count}</strong> tutor${count === 1 ? '' : 's'} (all results)`;
+                return;
+            }
+            filterSummaryEl.innerHTML = `Showing <strong>${count}</strong> tutor${count === 1 ? '' : 's'} for ${activeFilters.join(' • ')}`;
+        }
+
+        function renderTutorResults(tutors) {
+            if (!grid || !emptyEl) return;
+            emptyEl.style.display = 'none';
+            if (tutors.length === 0) {
+                grid.innerHTML = '';
+                emptyEl.textContent = 'No tutors match your current filters. Try broadening your search.';
+                emptyEl.style.display = 'block';
+                updateFilterSummary(0);
+                return;
+            }
+            grid.innerHTML = tutors.map(t => {
+                const initials = (t.fullName || 'T').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                const rating = (t.averageRating || 4.5).toFixed(1);
+                const subs = (t.subjects || []).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ');
+                const dataAttr = "data-tutor-id=\"" + t.id + "\"";
+                return `<div class="tutor-card" ${dataAttr} data-navigate="profile">
+                    <div class="tutor-header">
+                        <div class="tutor-avatar">${initials}</div>
+                        <div class="tutor-info">
+                            <h3>${t.fullName || 'Tutor'}</h3>
+                            <div class="tutor-subject">${subs || 'Tutor'} • ${t.yearsExperience || 0} years</div>
+                        </div>
+                    </div>
+                    <div class="tutor-rating">
+                        <i class="fas fa-star"></i><span style="color:#6b7280;margin-left:5px;">${rating} (${t.reviewCount || 0} reviews)</span>
+                    </div>
+                    <p style="color:#6b7280;margin:10px 0;">${t.bio || 'No bio yet.'}</p>
+                    <div class="tutor-price">$${t.hourlyRate || 0}/hr</div>
+                    <div class="verification-badge"><i class="fas fa-check-circle"></i> Verified</div>
+                </div>`;
+            }).join('');
+            updateFilterSummary(tutors.length);
+        }
+
+        function applyClientFiltersAndRender() {
+            const query = queryInput?.value.trim().toLowerCase() || '';
+            const selectedSubject = subjectSelect?.value || '';
+            const selectedPrice = priceSelect?.value || '';
+            const filtered = allTutors.filter((tutor) => {
+                const tutorName = (tutor.fullName || '').toLowerCase();
+                const tutorSubjects = (tutor.subjects || []).map(s => (s || '').toLowerCase());
+                const matchesQuery = !query || tutorName.includes(query) || tutorSubjects.some(s => s.includes(query));
+                const matchesSubject = !selectedSubject || tutorSubjects.includes(selectedSubject.toLowerCase());
+                const matchesPrice = tutorMatchesPriceFilter(tutor, selectedPrice);
+                return matchesQuery && matchesSubject && matchesPrice;
+            });
+            renderTutorResults(filtered);
+        }
 
         async function loadSearch() {
-            loadingEl && (loadingEl.style.display = 'block');
+            if (isSearching) return;
+            setSearchLoading(true);
             emptyEl && (emptyEl.style.display = 'none');
             grid && (grid.innerHTML = '');
 
             try {
+                const previousSubject = subjectSelect?.value || '';
                 const [coursesRes, tutorsRes] = await Promise.all([
                     apiRequest('/courses', { auth: false }),
                     apiRequest('/tutors' + (subjectSelect?.value ? '?subject=' + encodeURIComponent(subjectSelect.value) : ''), { auth: false }),
@@ -716,45 +810,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (subjectSelect && coursesRes.courses) {
                     subjectSelect.innerHTML = '<option value="">All Subjects</option>' +
                         coursesRes.courses.map(c => `<option value="${c.slug}">${c.name}</option>`).join('');
-                    if (subjectSelect.value) subjectSelect.value = subjectSelect.value;
+                    subjectSelect.value = previousSubject;
                 }
 
-                const tutors = tutorsRes.tutors || [];
-                window.__tutorlyTutors = tutors;
-                if (tutors.length === 0) {
-                    emptyEl && (emptyEl.style.display = 'block');
-                } else if (grid) {
-                    grid.innerHTML = tutors.map(t => {
-                        const initials = (t.fullName || 'T').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-                        const rating = (t.averageRating || 4.5).toFixed(1);
-                        const subs = (t.subjects || []).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ');
-                        const dataAttr = "data-tutor-id=\"" + t.id + "\"";
-                        return `<div class="tutor-card" ${dataAttr} data-navigate="profile">
-                            <div class="tutor-header">
-                                <div class="tutor-avatar">${initials}</div>
-                                <div class="tutor-info">
-                                    <h3>${t.fullName || 'Tutor'}</h3>
-                                    <div class="tutor-subject">${subs || 'Tutor'} • ${t.yearsExperience || 0} years</div>
-                                </div>
-                            </div>
-                            <div class="tutor-rating">
-                                <i class="fas fa-star"></i><span style="color:#6b7280;margin-left:5px;">${rating} (${t.reviewCount || 0} reviews)</span>
-                            </div>
-                            <p style="color:#6b7280;margin:10px 0;">${t.bio || 'No bio yet.'}</p>
-                            <div class="tutor-price">$${t.hourlyRate || 0}/hr</div>
-                            <div class="verification-badge"><i class="fas fa-check-circle"></i> Verified</div>
-                        </div>`;
-                    }).join('');
-                }
+                allTutors = tutorsRes.tutors || [];
+                window.__tutorlyTutors = allTutors;
+                applyClientFiltersAndRender();
             } catch (err) {
-                emptyEl && (emptyEl.textContent = 'Could not load tutors. Is the API running?') && (emptyEl.style.display = 'block');
+                if (emptyEl) {
+                    emptyEl.textContent = 'Could not load tutors. Is the API running?';
+                    emptyEl.style.display = 'block';
+                }
+                if (filterSummaryEl) filterSummaryEl.textContent = 'Unable to refresh tutor discovery right now.';
             } finally {
-                loadingEl && (loadingEl.style.display = 'none');
+                setSearchLoading(false);
             }
         }
 
         loadSearch();
-        document.getElementById('search-btn')?.addEventListener('click', loadSearch);
+        searchBtn?.addEventListener('click', loadSearch);
+        queryInput?.addEventListener('input', applyClientFiltersAndRender);
+        priceSelect?.addEventListener('change', applyClientFiltersAndRender);
         subjectSelect?.addEventListener('change', loadSearch);
     }
 
