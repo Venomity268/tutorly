@@ -32,11 +32,11 @@ const API_BASE_URL = (() => {
     const host = window.location.hostname.toLowerCase();
     const isLocalhost = host === 'localhost' || host === '127.0.0.1' || host === '[::1]';
 
-    // Local dev: API on 7503. Production: same origin (reverse-proxy /auth, /tutors, … on 443).
-    // Split hosting: set window.TUTORLY_API_BASE (e.g. '/api' or full URL) before this script.
+    // Local dev: API on 7503. Production: same origin with path prefix (e.g. nginx → /api → Node).
+    // Split hosting: set window.TUTORLY_API_BASE (full URL or path like '/api') before this script.
     return isLocalhost
         ? `${window.location.protocol}//${window.location.hostname}:7503`
-        : '';
+        : '/api';
 })();
 
 const STUDENT_LEVEL_LABELS = {
@@ -806,7 +806,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             host === 'localhost' || host === '127.0.0.1' || host === '[::1]';
                         errorEl.textContent = isLocal
                             ? 'Cannot reach server. Is the API running on port 7503?'
-                            : 'Cannot reach server. Confirm the API is proxied on this host (HTTPS, same origin), or set window.TUTORLY_API_BASE.';
+                            : 'Cannot reach server. Confirm the API is available under /api on this host (HTTPS), or set window.TUTORLY_API_BASE.';
                     } else {
                         errorEl.textContent = msg;
                     }

@@ -6,7 +6,7 @@
     const isLocal = host === "localhost" || host === "127.0.0.1" || host === "[::1]";
     return isLocal
       ? `${window.location.protocol}//${window.location.hostname}:7503`
-      : "";
+      : "/api";
   }
   const API_BASE = resolveApiBase();
   const AUTH_TOKEN_KEY = "tutorly_token";
