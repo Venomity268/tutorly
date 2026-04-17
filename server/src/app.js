@@ -30,6 +30,14 @@ export function createApp() {
   app.use("/bookings", bookingsRouter);
   app.use("/payments", paymentsRouter);
 
+  // Support both direct routes and /api-prefixed routes in production.
+  app.use("/api/auth", authRouter);
+  app.use("/api/admin", adminRouter);
+  app.use("/api/tutors", tutorsRouter);
+  app.use("/api/courses", coursesRouter);
+  app.use("/api/bookings", bookingsRouter);
+  app.use("/api/payments", paymentsRouter);
+
   app.use((req, res) => {
     res.status(404).json({ error: "NOT_FOUND", message: `No route for ${req.method} ${req.path}` });
   });

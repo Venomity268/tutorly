@@ -136,6 +136,12 @@ authRouter.post("/login", async (req, res) => {
   });
 });
 
+authRouter.get("/login", (_req, res) => {
+  return res
+    .status(405)
+    .json({ error: "METHOD_NOT_ALLOWED", message: "Use POST /auth/login with email and password" });
+});
+
 authRouter.get("/me", requireAuth, async (req, res) => {
   const { findTutorByUserId } = await import("../repositories/tutorRepo.js");
   const dbUser = findUserById(req.user.id);
