@@ -16,9 +16,19 @@ const SCREEN_TO_PAGE = {
     admin: '/pages/admin.html',
 };
 
-const API_BASE_URL =
-    (typeof window !== 'undefined' && window.TUTORLY_API_BASE) ||
-    `${window.location.protocol}//${window.location.hostname}:7503`;
+const API_BASE_URL = (() => {
+    if (typeof window === 'undefined') return '';
+    const explicitBase = window.TUTORLY_API_BASE;
+    if (explicitBase) return String(explicitBase).replace(/\/+$/, '');
+
+    const host = window.location.hostname.toLowerCase();
+    const isLocalhost = host === 'localhost' || host === '127.0.0.1' || host === '[::1]';
+
+    // Local development: direct to API port. Deployed hosts: use reverse-proxied /api.
+    return isLocalhost
+        ? `${window.location.protocol}//${window.location.hostname}:7503`
+        : '/api';
+})();
 
 const STUDENT_LEVEL_LABELS = {
     'high-school': 'High School',
@@ -781,7 +791,14 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 if (errorEl) {
                     const msg = err?.message || 'Unable to continue';
-                    errorEl.textContent = msg === 'Failed to fetch' ? 'Cannot reach server. Is the API running on port 7503?' : msg;
+                    if (msg === 'Failed to fetch') {
+                        errorEl.textContent =
+                            API_BASE_URL === '/api'
+                                ? 'Cannot reach API at /api. Check your server proxy route.'
+                                : 'Cannot reach server. Is the API running on port 7503?';
+                    } else {
+                        errorEl.textContent = msg;
+                    }
                     errorEl.classList.add('visible');
                 }
             } finally {

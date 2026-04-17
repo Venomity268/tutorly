@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#7c3aed" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22d3ee" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+  </defs>
+
+  <rect width="64" height="64" rx="14" fill="url(#bg)" />
+
+  <!-- Mortarboard top -->
+  <path d="M10 25 L32 16 L54 25 L32 34 Z" fill="#ffffff" />
+
+  <!-- Mortarboard body -->
+  <path d="M20 31 C20 41, 44 41, 44 31 L44 29 L20 29 Z" fill="#e9e8ff" />
+
+  <!-- Tassel -->
+  <path d="M48 26 L48 39" stroke="url(#accent)" stroke-width="3" stroke-linecap="round" />
+  <circle cx="48" cy="41.5" r="3" fill="url(#accent)" />
+</svg>

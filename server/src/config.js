@@ -30,6 +30,13 @@ function loadEnvFile() {
 
 loadEnvFile();
 
+function normalizeProjectUrl(rawValue) {
+  const raw = String(rawValue ?? "").trim();
+  if (!raw) return "https://tutorly.onthewifi.com";
+  const withProtocol = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(raw) ? raw : `https://${raw}`;
+  return withProtocol.replace(/\/+$/, "");
+}
+
 function required(name) {
   const value = process.env[name];
   if (!value) {
@@ -42,9 +49,12 @@ function required(name) {
   return value;
 }
 
+const projectUrl = normalizeProjectUrl(process.env.PROJECT_URL);
+
 export const config = {
   port: Number(process.env.PORT ?? 7503),
-  clientOrigin: process.env.CLIENT_ORIGIN ?? "*",
+  projectUrl,
+  clientOrigin: process.env.CLIENT_ORIGIN ?? projectUrl,
   jwtSecret: required("JWT_SECRET"),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? "7d",
 };

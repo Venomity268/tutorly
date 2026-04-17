@@ -34,11 +34,12 @@ copy .env.example .env   # Windows
 
 Edit `.env` and set at least:
 
-| Variable     | Description                     | Example                     |
-|-------------|---------------------------------|-----------------------------|
-| `JWT_SECRET`| Required. Secret for JWT tokens | `your-secret-key-change-me` |
-| `PORT`      | API server port                 | `7503`                      |
-| `CLIENT_ORIGIN` | CORS origin (or `*`)        | `*` or `http://localhost:5173` |
+| Variable        | Description                                  | Example                          |
+|----------------|----------------------------------------------|----------------------------------|
+| `JWT_SECRET`   | Required. Secret for JWT tokens               | `your-secret-key-change-me`      |
+| `PORT`         | API server port                               | `7503`                           |
+| `PROJECT_URL`  | Public project host (used for API base logs)  | `tutorly.onthewifi.com`          |
+| `CLIENT_ORIGIN`| CORS origin allowed by backend                | `https://tutorly.onthewifi.com`  |
 
 ### 3. Start the server
 
@@ -51,7 +52,7 @@ npm start
 You should see:
 
 ```
-Tutorly API listening on http://localhost:7503
+Tutorly API listening on https://tutorly.onthewifi.com:7503
 ```
 
 ### 4. Quick health check
@@ -139,6 +140,6 @@ The frontend uses `window.location.hostname` for API calls, so **localhost** and
 ## Troubleshooting
 
 - **Login not working / "Cannot reach server":** Make sure the backend is running on port 7503 (`cd server && npm run dev`). Both frontend (5173) and backend (7503) must be running.
-- **401 / CORS errors:** Ensure the backend is running and `CLIENT_ORIGIN` in `.env` includes your frontend origin (or is `*`).
+- **401 / CORS errors:** Ensure the backend is running and `CLIENT_ORIGIN` in `.env` matches your frontend origin.
 - **"Missing JWT_SECRET":** Add `JWT_SECRET=some-secret-string` to `server/.env`.
 - **Blank page:** Serve the frontend over HTTP (not by opening the HTML file directly).
