@@ -3,6 +3,14 @@
  * Handles navigation, UI interactions, and dynamic updates
  */
 
+(function initTutorlyApiBaseFromMeta() {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    if (window.TUTORLY_API_BASE) return;
+    const el = document.querySelector('meta[name="tutorly-api-base"]');
+    const v = el?.getAttribute('content')?.trim();
+    if (v) window.TUTORLY_API_BASE = v;
+})();
+
 // ===== NAVIGATION SYSTEM =====
 // Screen order for navigation buttons
 const SCREEN_ORDER = ['onboarding', 'search', 'profile', 'booking', 'dashboard', 'admin'];
@@ -24,10 +32,11 @@ const API_BASE_URL = (() => {
     const host = window.location.hostname.toLowerCase();
     const isLocalhost = host === 'localhost' || host === '127.0.0.1' || host === '[::1]';
 
-    // Local development: direct to API port. Deployed hosts: use reverse-proxied /api.
+    // Local dev: API on 7503. Production: same origin (reverse-proxy /auth, /tutors, … on 443).
+    // Split hosting: set window.TUTORLY_API_BASE (e.g. '/api' or full URL) before this script.
     return isLocalhost
         ? `${window.location.protocol}//${window.location.hostname}:7503`
-        : '/api';
+        : '';
 })();
 
 const STUDENT_LEVEL_LABELS = {
@@ -792,10 +801,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (errorEl) {
                     const msg = err?.message || 'Unable to continue';
                     if (msg === 'Failed to fetch') {
-                        errorEl.textContent =
-                            API_BASE_URL === '/api'
-                                ? 'Cannot reach API at /api. Check your server proxy route.'
-                                : 'Cannot reach server. Is the API running on port 7503?';
+                        const host = window.location.hostname.toLowerCase();
+                        const isLocal =
+                            host === 'localhost' || host === '127.0.0.1' || host === '[::1]';
+                        errorEl.textContent = isLocal
+                            ? 'Cannot reach server. Is the API running on port 7503?'
+                            : 'Cannot reach server. Confirm the API is proxied on this host (HTTPS, same origin), or set window.TUTORLY_API_BASE.';
                     } else {
                         errorEl.textContent = msg;
                     }

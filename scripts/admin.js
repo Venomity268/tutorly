@@ -1,5 +1,14 @@
 (function () {
-  const API_BASE = `${window.location.protocol}//${window.location.hostname}:7503`;
+  function resolveApiBase() {
+    const explicit = typeof window !== "undefined" && window.TUTORLY_API_BASE;
+    if (explicit) return String(explicit).replace(/\/+$/, "");
+    const host = window.location.hostname.toLowerCase();
+    const isLocal = host === "localhost" || host === "127.0.0.1" || host === "[::1]";
+    return isLocal
+      ? `${window.location.protocol}//${window.location.hostname}:7503`
+      : "";
+  }
+  const API_BASE = resolveApiBase();
   const AUTH_TOKEN_KEY = "tutorly_token";
   const AUTH_USER_KEY = "tutorly_user";
 
