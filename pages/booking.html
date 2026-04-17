@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tutorly — Book a session</title>
+    <title>Tutorly - Book a session</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../styles/main.css">
 </head>
 <body>
-    <h1 class="page-title">Tutorly</h1>
-    <p class="page-subtitle">Find the right tutor. Book in minutes.</p>
+    <div class="hero-banner">
+        <h1 class="page-title">Tutorly</h1>
+        <p class="page-subtitle">Find the right tutor. Book in minutes.</p>
+    </div>
     
     <div class="demo-container">
         <header class="demo-header">
@@ -34,60 +36,78 @@
                     <i class="fas fa-calendar-alt"></i>
                     <span>Book Your Session</span>
                 </div>
-                <p class="screen-subtitle">Select your preferred date and time for your tutoring session.</p>
+                <p class="screen-subtitle">Choose an open slot from your tutor&rsquo;s calendar, reserve it, then confirm payment.</p>
                 
                 <div class="booking-container">
-                    <div class="calendar-section">
-                        <h3 style="color: #1f2937; margin-bottom: 15px;">Select Date & Time</h3>
-                        <div style="background: #f3f4f6; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <h4 style="color: #1f2937;">Tomorrow, June 15</h4>
-                                <span style="color: #10b981; font-weight: 600;"><i class="fas fa-check-circle"></i> Available</span>
-                            </div>
-                        </div>
-                        <h4 style="color: #1f2937; margin: 20px 0 10px;">Available Time Slots</h4>
-                        <div class="time-slots">
-                            <div class="time-slot" data-time="2:00 PM">2:00 PM</div>
-                            <div class="time-slot unavailable" data-time="2:30 PM" aria-disabled="true">2:30 PM <small>Unavailable</small></div>
-                            <div class="time-slot selected" data-time="3:00 PM">3:00 PM</div>
-                            <div class="time-slot" data-time="3:30 PM">3:30 PM</div>
-                            <div class="time-slot unavailable" data-time="4:00 PM" aria-disabled="true">4:00 PM <small>Unavailable</small></div>
-                            <div class="time-slot" data-time="4:30 PM">4:30 PM</div>
-                        </div>
-                        <div class="booking-slot-note"><i class="fas fa-info-circle"></i> Unavailable slots cannot be selected.</div>
-                        <div style="margin-top: 30px;">
-                            <h4 style="color: #1f2937; margin-bottom: 10px;">Session Length</h4>
-                            <div style="display: flex; gap: 10px;">
-                                <button class="nav-btn" data-duration="30" style="background: #4f46e5; color: white;">30 min</button>
-                                <button class="nav-btn" data-duration="45">45 min</button>
-                                <button class="nav-btn" data-duration="60">60 min</button>
-                                <button class="nav-btn" data-duration="90">90 min</button>
-                            </div>
+                    <div class="calendar-section booking-calendar-card">
+                        <h3 class="booking-section-title">Available times</h3>
+                        <p id="slots-range-label" class="booking-muted"></p>
+                        <div id="slots-loading" class="booking-loading" role="status"><i class="fas fa-spinner fa-spin"></i> Loading open slots&hellip;</div>
+                        <div id="slots-empty" class="booking-empty" style="display:none;" role="status">No open slots in this range. Try another tutor or check back soon.</div>
+                        <h4 class="booking-slots-heading">Select a time</h4>
+                        <div id="time-slots" class="time-slots" role="listbox" aria-label="Available time slots"></div>
+                        <div class="booking-slot-note"><i class="fas fa-info-circle"></i> Slots marked unavailable are already reserved.</div>
+                        <div class="form-group" style="margin-top: 1.25rem;">
+                            <label class="form-label" for="booking-subject">Topic (optional)</label>
+                            <input id="booking-subject" class="form-input" type="text" placeholder="e.g. Mechanics homework" autocomplete="off">
                         </div>
                     </div>
-                    <div class="booking-summary">
-                        <h3 style="color: #1f2937; margin-bottom: 20px;">Booking Summary</h3>
+                    <div class="booking-summary booking-summary-card">
+                        <h3 class="booking-section-title">Booking summary</h3>
                         <div id="booking-tutor-summary" style="display: flex; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb;">
-                            <div class="tutor-avatar" style="width: 50px; height: 50px; font-size: 18px;">—</div>
+                            <div class="tutor-avatar" style="width: 50px; height: 50px; font-size: 18px;">-</div>
                             <div style="margin-left: 15px;">
-                                <h4 style="color: #1f2937;">Select a tutor</h4>
-                                <div style="color: #6b7280; font-size: 14px;">—</div>
+                                <h4 style="color: #1f2937; margin: 0;">Select a tutor</h4>
+                                <div style="color: #6b7280; font-size: 14px;">-</div>
                             </div>
                         </div>
-                        <div style="margin-bottom: 25px;">
-                            <div class="summary-row"><span style="color: #6b7280;">Date & Time</span><span class="summary-value" id="summary-time">Tomorrow, 3:00 PM</span></div>
-                            <div class="summary-row"><span style="color: #6b7280;">Duration</span><span class="summary-value" id="summary-duration">30 minutes</span></div>
-                            <div class="summary-row"><span style="color: #6b7280;">Rate</span><span class="summary-value" id="booking-rate">$0/hour</span></div>
+                        <div class="booking-session-details">
+                            <div class="summary-row"><span class="booking-muted">Date &amp; time</span><span class="summary-value" id="summary-time">-</span></div>
+                            <div class="summary-row"><span class="booking-muted">Duration</span><span class="summary-value" id="summary-duration">-</span></div>
+                            <div class="summary-row"><span class="booking-muted">Rate</span><span class="summary-value" id="booking-rate">$0/hour</span></div>
                         </div>
-                        <div style="border-top: 2px solid #e5e7eb; padding-top: 20px;">
-                            <div class="summary-row"><span style="color: #1f2937; font-weight: 600;">Subtotal</span><span style="color: #1f2937; font-weight: 600;" id="booking-subtotal">$0.00</span></div>
-                            <div class="summary-row"><span style="color: #6b7280;">Platform fee (10%)</span><span style="color: #6b7280;" id="booking-fee">$0.00</span></div>
-                            <div class="summary-row" style="margin-bottom: 30px;"><span style="color: #1f2937; font-size: 20px; font-weight: 800;">Total</span><span style="color: #10b981; font-size: 20px; font-weight: 800;" id="booking-total">$0.00</span></div>
+                        <div class="booking-pricing" aria-labelledby="booking-pricing-title">
+                            <div class="booking-pricing__header">
+                                <span id="booking-pricing-title" class="booking-pricing__title">Payment summary</span>
+                                <span class="booking-pricing__badge">USD</span>
+                            </div>
+                            <div class="booking-pricing__lines">
+                                <div class="booking-pricing__row">
+                                    <span class="booking-pricing__label">Session subtotal</span>
+                                    <span class="booking-pricing__value" id="booking-subtotal">$0.00</span>
+                                </div>
+                                <div class="booking-pricing__row booking-pricing__row--muted">
+                                    <span class="booking-pricing__label">Platform fee <span class="booking-pricing__hint">10%</span></span>
+                                    <span class="booking-pricing__value" id="booking-fee">$0.00</span>
+                                </div>
+                            </div>
+                            <div class="booking-total-panel" role="status">
+                                <div class="booking-total-panel__top">
+                                    <span class="booking-total-panel__label">Total due</span>
+                                    <span class="booking-total-panel__amount" id="booking-total">$0.00</span>
+                                </div>
+                                <p class="booking-total-panel__footnote">Estimated charge · Taxes may apply where required</p>
+                            </div>
                         </div>
+
                         <div id="booking-error" class="booking-inline-error" role="alert"></div>
-                        <button class="btn-primary" id="booking-confirm-btn" type="button"><i class="fas fa-lock"></i> Confirm & Pay Securely</button>
-                        <div id="booking-confirmation" class="booking-confirmation" aria-live="polite"></div>
-                        <p style="text-align: center; color: #6b7280; font-size: 14px; margin-top: 15px;"><i class="fas fa-shield-alt"></i> Secure payment • 24-hour cancellation</p>
+                        <div id="payment-banner" class="payment-banner" role="status" aria-live="polite"></div>
+
+                        <button class="btn-primary" id="booking-reserve-btn" type="button"><i class="fas fa-calendar-check"></i> Reserve session</button>
+
+                        <div id="booking-post-reserve" class="booking-post-reserve" style="display:none;">
+                            <div id="booking-confirmation" class="booking-confirmation visible" aria-live="polite"></div>
+                            <div class="form-group">
+                                <label class="form-label" for="payment-method">Payment method (demo)</label>
+                                <select id="payment-method" class="form-input">
+                                    <option value="card">Card (success)</option>
+                                    <option value="decline">Simulate decline</option>
+                                </select>
+                            </div>
+                            <button class="btn-primary" id="booking-pay-btn" type="button"><i class="fas fa-lock"></i> Confirm &amp; pay</button>
+                        </div>
+
+                        <p class="booking-footnote"><i class="fas fa-shield-alt"></i> Secure payment (simulated) &middot; Cancel up to 24 hours ahead where applicable</p>
                     </div>
                 </div>
             </section>
@@ -95,9 +115,10 @@
     </div>
     
     <footer class="demo-footer">
-        Tutorly • Built for reliable tutor discovery and booking
+        Tutorly &middot; Reliable tutor discovery and booking
     </footer>
 
+    <script>window.TUTORLY_API_BASE = window.TUTORLY_API_BASE || '';</script>
     <script src="../scripts/main.js"></script>
 </body>
 </html>

@@ -3,6 +3,26 @@ import { createUser, findUserByEmail } from "./repositories/userRepo.js";
 import { createTutor, findTutorByUserId, updateTutorVerification } from "./repositories/tutorRepo.js";
 import { createCourse } from "./repositories/courseRepo.js";
 import { createBooking } from "./repositories/bookingRepo.js";
+import { createSlot, listSlotsByTutorId } from "./repositories/slotRepo.js";
+
+function seedWeeklySlots(tutorId) {
+  if (listSlotsByTutorId(tutorId).length > 0) return;
+  const now = new Date();
+  for (let d = 0; d < 14; d++) {
+    const day = new Date(now);
+    day.setDate(now.getDate() + d);
+    for (const hour of [9, 11, 13, 15, 17]) {
+      const t = new Date(day);
+      t.setHours(hour, 0, 0, 0);
+      if (t <= now) continue;
+      try {
+        createSlot({ tutorId, startAt: t.toISOString(), durationMinutes: 60 });
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+}
 
 export async function seed() {
   // Admin
@@ -30,6 +50,16 @@ export async function seed() {
     } catch {
       /* exists */
     }
+  }
+
+  // Demo student (for booking / payments flow)
+  if (!findUserByEmail("student@tutorly.com")) {
+    createUser({
+      fullName: "Alex Student",
+      email: "student@tutorly.com",
+      passwordHash: await bcrypt.hash("student123", 10),
+      role: "student",
+    });
   }
 
   // Sample tutors
@@ -69,6 +99,10 @@ export async function seed() {
     }
     if (t.status === "approved" && tutor.verificationStatus !== "approved") {
       updateTutorVerification(tutor.id, "approved");
+    }
+
+    if (t.status === "approved" && (t.email === "dionte@tutorly.com" || t.email === "maldrick@tutorly.com")) {
+      seedWeeklySlots(tutor.id);
     }
 
     // Seed sample bookings for approved tutors

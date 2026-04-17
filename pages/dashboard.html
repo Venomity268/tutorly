@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tutorly — Dashboard</title>
+    <title>Tutorly - Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../styles/main.css">
 </head>
@@ -42,21 +42,21 @@
                 <div id="dashboard-tutor" style="display: none;">
                     <div class="dashboard-profile-bar">
                         <div class="dashboard-profile-summary">
-                            <div class="tutor-avatar" id="dashboard-avatar">—</div>
+                            <div class="tutor-avatar" id="dashboard-avatar">-</div>
                             <div>
-                                <h3 id="dashboard-name" style="margin: 0 0 4px;">—</h3>
-                                <p id="dashboard-subjects" style="color: #64748b; font-size: 0.9rem; margin: 0;">—</p>
-                                <span class="verification-badge" id="dashboard-status">—</span>
+                                <h3 id="dashboard-name" style="margin: 0 0 4px;">-</h3>
+                                <p id="dashboard-subjects" style="color: #64748b; font-size: 0.9rem; margin: 0;">-</p>
+                                <span class="verification-badge" id="dashboard-status">-</span>
                             </div>
-                            <button class="btn-secondary" id="dashboard-edit-btn" type="button" style="margin-left: auto;"><i class="fas fa-edit"></i> Edit Profile</button>
+                            <button class="btn-secondary dashboard-edit-profile-btn" id="dashboard-edit-btn" type="button"><i class="fas fa-edit"></i> Edit Profile</button>
                         </div>
                     </div>
 
                     <div class="dashboard-stats" id="dashboard-stats">
                         <div class="stat-card"><div class="stat-value" id="stat-earnings">$0</div><div class="stat-label">This Month's Earnings</div></div>
                         <div class="stat-card"><div class="stat-value" id="stat-upcoming">0</div><div class="stat-label">Upcoming Sessions</div></div>
-                        <div class="stat-card"><div class="stat-value" id="stat-rating">—</div><div class="stat-label">Average Rating</div></div>
-                        <div class="stat-card"><div class="stat-value" id="stat-rate">—</div><div class="stat-label">Booking Rate</div></div>
+                        <div class="stat-card"><div class="stat-value" id="stat-rating">-</div><div class="stat-label">Average Rating</div></div>
+                        <div class="stat-card"><div class="stat-value" id="stat-rate">-</div><div class="stat-label">Booking Rate</div></div>
                     </div>
 
                     <div class="upcoming-sessions">
@@ -69,12 +69,49 @@
 
                 <!-- Student dashboard (when not a tutor) -->
                 <div id="dashboard-student" style="display: none;">
+                    <div id="dashboard-student-banner" style="display: none; margin-bottom: 1.25rem;"></div>
                     <div class="dashboard-student-card">
                         <i class="fas fa-search" style="font-size: 2.5rem; color: #0ea5e9; margin-bottom: 16px;"></i>
                         <h3 style="color: #0f172a; margin-bottom: 8px;">Find a Tutor</h3>
-                        <p style="color: #64748b; margin-bottom: 20px;">Browse qualified tutors and book your first session.</p>
+                        <p style="color: #64748b; margin-bottom: 20px;">Browse qualified tutors and book sessions in a few steps.</p>
                         <a class="btn-primary" href="/pages/search.html" style="width: auto; padding: 14px 32px;"><i class="fas fa-search"></i> Find Tutor</a>
                     </div>
+                    <div id="dashboard-student-prefs" class="dashboard-student-prefs" style="display: none;">
+                        <h3 class="dashboard-student-heading" style="margin-top:0;">Learning preferences</h3>
+                        <div id="dashboard-student-prefs-view">
+                            <p id="dashboard-student-prefs-summary" class="dashboard-prefs-summary" style="color: #475569; margin: 0 0 12px;">-</p>
+                            <button type="button" class="btn-secondary" id="dashboard-student-prefs-edit"><i class="fas fa-sliders-h"></i> Edit preferences</button>
+                        </div>
+                        <form id="dashboard-student-prefs-form" class="dashboard-student-prefs-form" style="display: none;">
+                            <fieldset class="subject-fieldset">
+                                <legend class="form-label">Subjects you&apos;re studying</legend>
+                                <div class="subject-chip-grid" id="dashboard-prefs-subjects">
+                                    <label class="subject-chip"><input type="checkbox" name="dashboard-pref-subject" value="mathematics"> Mathematics</label>
+                                    <label class="subject-chip"><input type="checkbox" name="dashboard-pref-subject" value="physics"> Physics</label>
+                                    <label class="subject-chip"><input type="checkbox" name="dashboard-pref-subject" value="chemistry"> Chemistry</label>
+                                    <label class="subject-chip"><input type="checkbox" name="dashboard-pref-subject" value="english"> English</label>
+                                    <label class="subject-chip"><input type="checkbox" name="dashboard-pref-subject" value="computer-science"> Computer Science</label>
+                                    <label class="subject-chip"><input type="checkbox" name="dashboard-pref-subject" value="biology"> Biology</label>
+                                </div>
+                            </fieldset>
+                            <div class="form-group" style="margin-top: 1rem;">
+                                <label class="form-label" for="dashboard-prefs-level">Education level</label>
+                                <select id="dashboard-prefs-level" class="form-input" required>
+                                    <option value="">Select level</option>
+                                    <option value="high-school">High School</option>
+                                    <option value="university">University</option>
+                                    <option value="graduate">Graduate</option>
+                                    <option value="professional">Professional Development</option>
+                                </select>
+                            </div>
+                            <div id="dashboard-prefs-error" class="form-error" role="alert"></div>
+                            <div class="dashboard-prefs-actions">
+                                <button type="submit" class="btn-primary">Save</button>
+                                <button type="button" class="btn-secondary" id="dashboard-prefs-cancel">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="dashboard-student-bookings" class="dashboard-student-bookings"></div>
                 </div>
 
                 <!-- Edit Profile Modal -->

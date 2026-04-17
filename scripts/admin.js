@@ -1,5 +1,5 @@
 (function () {
-  const API_BASE = `${window.location.protocol}//${window.location.hostname}:8787`;
+  const API_BASE = `${window.location.protocol}//${window.location.hostname}:7503`;
   const AUTH_TOKEN_KEY = "tutorly_token";
   const AUTH_USER_KEY = "tutorly_user";
 
@@ -102,7 +102,7 @@
           .map(
             (t) => `
           <div class="admin-pending-item">
-            <span><strong>${t.fullName}</strong> — ${t.email}</span>
+            <span><strong>${t.fullName}</strong> - ${t.email}</span>
             <span>
               <button class="btn-sm approve" data-id="${t.id}">Approve</button>
               <button class="btn-sm reject" data-id="${t.id}">Reject</button>
@@ -143,6 +143,18 @@
     }
   }
 
+  function tutorManagementActions(t) {
+    const id = t.id;
+    const s = t.verificationStatus;
+    const approve = `<button type="button" class="btn-sm approve" data-id="${id}">Approve</button>`;
+    const reject = `<button type="button" class="btn-sm reject" data-id="${id}">Reject</button>`;
+    const revoke = `<button type="button" class="btn-sm reject" data-id="${id}" title="Remove approval">Revoke</button>`;
+    if (s === "pending") return approve + reject;
+    if (s === "approved") return revoke;
+    if (s === "rejected") return approve;
+    return "-";
+  }
+
   async function loadTutors() {
     const filter = document.getElementById("tutor-status-filter")?.value || "";
     const q = filter ? "?status=" + filter : "";
@@ -155,12 +167,10 @@
         <tr>
           <td>${t.fullName}</td>
           <td>${t.email}</td>
-          <td>${(t.subjects || []).join(", ") || "—"}</td>
+          <td>${(t.subjects || []).join(", ") || "-"}</td>
           <td>$${t.hourlyRate || 0}/hr</td>
           <td><span class="status-badge ${t.verificationStatus}">${t.verificationStatus}</span></td>
-          <td>
-            ${t.verificationStatus === "pending" ? `<button class="btn-sm approve" data-id="${t.id}">Approve</button><button class="btn-sm reject" data-id="${t.id}">Reject</button>` : "—"}
-          </td>
+          <td class="admin-tutor-actions">${tutorManagementActions(t)}</td>
         </tr>
       `
         )

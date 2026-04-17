@@ -1,7 +1,8 @@
 import express from "express";
 import { listTutors, findTutorById, findTutorByUserId, updateTutor } from "../repositories/tutorRepo.js";
 import { findUserById, updateUser } from "../repositories/userRepo.js";
-import { listBookingsByTutorId, getTutorStats } from "../repositories/bookingRepo.js";
+import { listBookingsByTutorId, getTutorStats, hasTutorTimeConflict } from "../repositories/bookingRepo.js";
+import { createSlot, listSlotsByTutorId } from "../repositories/slotRepo.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 
 export const tutorsRouter = express.Router();
@@ -79,6 +80,51 @@ tutorsRouter.get("/me/bookings", requireAuth, requireRole("tutor"), (req, res) =
   }
   const upcoming = listBookingsByTutorId(tutor.id, { upcomingOnly: true });
   return res.json({ bookings: upcoming });
+});
+
+tutorsRouter.post("/me/slots", requireAuth, requireRole("tutor"), (req, res) => {
+  const tutor = findTutorByUserId(req.user.id);
+  if (!tutor) {
+    return res.status(404).json({ error: "NOT_FOUND", message: "Tutor profile not found" });
+  }
+  const { startAt, durationMinutes } = req.body ?? {};
+  if (!startAt || typeof startAt !== "string") {
+    return res.status(400).json({ error: "VALIDATION_ERROR", message: "startAt is required" });
+  }
+  try {
+    const slot = createSlot({ tutorId: tutor.id, startAt, durationMinutes });
+    return res.status(201).json({ slot });
+  } catch (e) {
+    if (e?.code === "INVALID_DATE") {
+      return res.status(400).json({ error: "VALIDATION_ERROR", message: "startAt is invalid" });
+    }
+    throw e;
+  }
+});
+
+tutorsRouter.get("/:id/slots", (req, res) => {
+  const tutor = findTutorById(req.params.id);
+  if (!tutor || tutor.verificationStatus !== "approved") {
+    return res.status(404).json({ error: "NOT_FOUND", message: "Tutor not found" });
+  }
+  const { from, to } = req.query;
+  if (!from || !to || typeof from !== "string" || typeof to !== "string") {
+    return res.status(400).json({
+      error: "VALIDATION_ERROR",
+      message: "Query parameters from and to are required (ISO date strings)",
+    });
+  }
+  const fromD = new Date(from);
+  const toD = new Date(to);
+  if (Number.isNaN(fromD.getTime()) || Number.isNaN(toD.getTime())) {
+    return res.status(400).json({ error: "VALIDATION_ERROR", message: "from and to must be valid dates" });
+  }
+  const slots = listSlotsByTutorId(tutor.id, { from, to });
+  const slotsOut = slots.map((s) => ({
+    ...s,
+    available: !hasTutorTimeConflict(tutor.id, s.startAt, s.durationMinutes),
+  }));
+  return res.json({ slots: slotsOut });
 });
 
 tutorsRouter.get("/:id", (req, res) => {

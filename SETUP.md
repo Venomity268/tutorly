@@ -1,4 +1,4 @@
-# Tutorly — Setup & Startup
+# Tutorly - Setup & Startup
 
 Quick reference for running the Tutorly frontend and backend locally.
 
@@ -7,7 +7,7 @@ Quick reference for running the Tutorly frontend and backend locally.
 ## Prerequisites
 
 - **Node.js** (v18+)
-- **Python** (3.x) — for serving the frontend, or any static server
+- **Python** (3.x) - for serving the frontend, or any static server
 
 ---
 
@@ -37,7 +37,7 @@ Edit `.env` and set at least:
 | Variable     | Description                     | Example                     |
 |-------------|---------------------------------|-----------------------------|
 | `JWT_SECRET`| Required. Secret for JWT tokens | `your-secret-key-change-me` |
-| `PORT`      | API server port                 | `8787`                      |
+| `PORT`      | API server port                 | `7503`                      |
 | `CLIENT_ORIGIN` | CORS origin (or `*`)        | `*` or `http://localhost:5173` |
 
 ### 3. Start the server
@@ -51,13 +51,13 @@ npm start
 You should see:
 
 ```
-Tutorly API listening on http://localhost:8787
+Tutorly API listening on http://localhost:7503
 ```
 
 ### 4. Quick health check
 
 ```bash
-curl http://localhost:8787/health
+curl http://localhost:7503/health
 # {"ok":true}
 ```
 
@@ -129,7 +129,7 @@ npx serve -p 5173
 
 | Service  | Default Port |
 |----------|--------------|
-| Backend  | 8787         |
+| Backend  | 7503         |
 | Frontend | 5173         |
 
 The frontend uses `window.location.hostname` for API calls, so **localhost** and **127.0.0.1** both work.
@@ -138,7 +138,7 @@ The frontend uses `window.location.hostname` for API calls, so **localhost** and
 
 ## Troubleshooting
 
-- **Login not working / "Cannot reach server":** Make sure the backend is running on port 8787 (`cd server && npm run dev`). Both frontend (5173) and backend (8787) must be running.
+- **Login not working / "Cannot reach server":** Make sure the backend is running on port 7503 (`cd server && npm run dev`). Both frontend (5173) and backend (7503) must be running.
 - **401 / CORS errors:** Ensure the backend is running and `CLIENT_ORIGIN` in `.env` includes your frontend origin (or is `*`).
 - **"Missing JWT_SECRET":** Add `JWT_SECRET=some-secret-string` to `server/.env`.
 - **Blank page:** Serve the frontend over HTTP (not by opening the HTML file directly).

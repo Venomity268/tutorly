@@ -5,7 +5,8 @@ import { authRouter } from "./routes/auth.js";
 import { adminRouter } from "./routes/admin.js";
 import { tutorsRouter } from "./routes/tutors.js";
 import { coursesRouter } from "./routes/courses.js";
-import { seed } from "./seed.js";
+import { bookingsRouter } from "./routes/bookings.js";
+import { paymentsRouter } from "./routes/payments.js";
 
 export function createApp() {
   const app = express();
@@ -26,6 +27,8 @@ export function createApp() {
   app.use("/admin", adminRouter);
   app.use("/tutors", tutorsRouter);
   app.use("/courses", coursesRouter);
+  app.use("/bookings", bookingsRouter);
+  app.use("/payments", paymentsRouter);
 
   app.use((req, res) => {
     res.status(404).json({ error: "NOT_FOUND", message: `No route for ${req.method} ${req.path}` });
@@ -33,7 +36,16 @@ export function createApp() {
 
   // eslint-disable-next-line no-unused-vars
   app.use((err, _req, res, _next) => {
-    res.status(500).json({ error: "INTERNAL_ERROR", message: "Unexpected server error" });
+    const status = err.statusCode || err.status || 500;
+    if (status >= 500) {
+      // eslint-disable-next-line no-console
+      console.error(err);
+    }
+    const body =
+      status === 500
+        ? { error: "INTERNAL_ERROR", message: "Unexpected server error" }
+        : { error: err.code || "ERROR", message: err.message || "Request failed" };
+    res.status(status >= 400 && status < 600 ? status : 500).json(body);
   });
 
   return app;

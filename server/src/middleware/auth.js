@@ -28,6 +28,8 @@ export function requireAuth(req, res, next) {
       fullName: user.fullName,
       role: user.role,
       status: user.status,
+      studentSubjects: user.studentSubjects ?? [],
+      studentLevel: user.studentLevel ?? "",
     };
 
     return next();

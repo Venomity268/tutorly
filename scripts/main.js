@@ -16,7 +16,48 @@ const SCREEN_TO_PAGE = {
     admin: '/pages/admin.html',
 };
 
-const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:8787`;
+const API_BASE_URL =
+    (typeof window !== 'undefined' && window.TUTORLY_API_BASE) ||
+    `${window.location.protocol}//${window.location.hostname}:7503`;
+
+const STUDENT_LEVEL_LABELS = {
+    'high-school': 'High School',
+    'university': 'University',
+    'graduate': 'Graduate',
+    'professional': 'Professional Development',
+};
+
+function formatSubjectSlugLabel(slug) {
+    if (!slug || typeof slug !== 'string') return '';
+    return slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' ');
+}
+
+function shortBookingRef(id) {
+    if (!id || typeof id !== 'string') return '';
+    return id.length >= 8 ? id.slice(0, 8) : id;
+}
+
+function bookingDetailPageHref(bookingId) {
+    return `/pages/dashboard.html?booking=${encodeURIComponent(bookingId)}`;
+}
+
+/** When opening the dashboard with `?booking=<uuid>`, focus the matching session row. */
+function highlightDashboardBookingRow(container, bookingId) {
+    if (!container || !bookingId) return;
+    const row = container.querySelector(`[data-booking-id="${bookingId}"]`);
+    if (!row) return;
+    row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    row.classList.add('booking-session-highlight');
+    window.setTimeout(() => row.classList.remove('booking-session-highlight'), 2800);
+    try {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('booking');
+        const q = url.searchParams.toString();
+        window.history.replaceState({}, '', url.pathname + (q ? `?${q}` : ''));
+    } catch {
+        /* ignore */
+    }
+}
 
 const AUTH_TOKEN_KEY = 'tutorly_token';
 const AUTH_USER_KEY = 'tutorly_user';
@@ -114,6 +155,11 @@ function isAllowed(screenId) {
     if (screenId === 'dashboard') return user.role !== 'admin'; // Admins use admin, not dashboard
     if (screenId === 'admin') return user.role === 'admin';
 
+    // Admin: portal + browsing tutors only (student booking flow uses separate routes).
+    if (user.role === 'admin') {
+        return screenId === 'search';
+    }
+
     // Student journey.
     if (user.role === 'student') {
         if (screenId === 'search') return true;
@@ -158,6 +204,13 @@ function enforceRouteGuard(currentScreen) {
         return;
     }
 
+    // Signed-in admin hit a route they cannot use → Admin portal (avoid bouncing them to login).
+    if (token && user?.role === 'admin') {
+        sessionStorage.setItem('tutorly_last_screen', 'admin');
+        window.location.replace(SCREEN_TO_PAGE.admin);
+        return;
+    }
+
     sessionStorage.setItem('tutorly_last_screen', 'onboarding');
     window.location.replace(SCREEN_TO_PAGE.onboarding);
 }
@@ -177,7 +230,8 @@ function updateNavLocking() {
         if (!allowed) {
             if (!token || !user) btn.title = 'Sign in to continue';
             else if (screenId === 'onboarding') btn.title = 'Sign out to access';
-            else if (screenId === 'dashboard' && user?.role === 'admin') btn.title = 'Admins use the Admin portal';
+            else if (screenId === 'dashboard' && user?.role === 'admin') btn.title = 'Use Admin portal instead';
+            else if (user?.role === 'admin' && (screenId === 'profile' || screenId === 'booking')) btn.title = 'Not available in admin portal';
             else if ((screenId === 'profile' || screenId === 'booking') && !selectedTutor) btn.title = 'Select a tutor first';
             else if (user?.role === 'tutor') btn.title = 'Available after setup';
         } else {
@@ -510,29 +564,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const modeRegisterBtn = document.getElementById('auth-mode-register');
         const modeLoginBtn = document.getElementById('auth-mode-login');
         const registerFields = document.getElementById('auth-register-fields');
-        const studentPrefs = document.getElementById('student-preferences');
+        const signupSubjectsWrap = document.getElementById('signup-subjects-wrap');
+        const signupSubjectsLegend = document.getElementById('signup-subjects-legend');
         const studentLevelGroup = document.getElementById('student-level-group');
         const fullNameEl = document.getElementById('auth-full-name');
         const emailEl = document.getElementById('auth-email');
         const passwordEl = document.getElementById('auth-password');
         const roleEl = document.getElementById('auth-role');
-        const studentSubjectEl = document.getElementById('student-subject');
         const studentLevelEl = document.getElementById('student-level');
         const submitEl = document.getElementById('auth-submit');
         const errorEl = document.getElementById('auth-error');
         const switchText = document.getElementById('auth-switch-text');
-        const switchBtn = document.getElementById('auth-switch-to-login');
         const fieldErrorMap = {
             fullName: document.getElementById('auth-full-name-error'),
             email: document.getElementById('auth-email-error'),
             password: document.getElementById('auth-password-error'),
-            studentSubject: document.getElementById('student-subject-error'),
+            signupSubjects: document.getElementById('signup-subjects-error'),
             studentLevel: document.getElementById('student-level-error'),
         };
         let isSubmittingAuth = false;
 
         const urlMode = new URLSearchParams(window.location.search).get('mode');
         let mode = (urlMode === 'login' || urlMode === 'register') ? urlMode : 'login';
+
+        function regSubjectCheckedCount() {
+            return document.querySelectorAll('input[name="reg-subject"]:checked').length;
+        }
 
         function applyMode() {
             document.querySelectorAll('.auth-tab').forEach(t => {
@@ -548,14 +605,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     switchText.innerHTML = 'Don\'t have an account? <button type="button" class="auth-link">Create one</button>';
                 }
             }
-            if (roleEl) updateStudentPrefsVisibility();
+            if (roleEl) updateSignupFieldsVisibility();
             clearAllFieldErrors();
         }
 
-        function updateStudentPrefsVisibility() {
-            const isStudent = roleEl?.value === 'student';
-            if (studentPrefs) studentPrefs.style.display = mode === 'register' && isStudent ? '' : 'none';
+        function updateSignupFieldsVisibility() {
+            const r = roleEl?.value;
+            const isStudent = r === 'student';
+            const isTutor = r === 'tutor';
+            const showSubjects = mode === 'register' && (isStudent || isTutor);
+            if (signupSubjectsWrap) signupSubjectsWrap.style.display = showSubjects ? '' : 'none';
             if (studentLevelGroup) studentLevelGroup.style.display = mode === 'register' && isStudent ? '' : 'none';
+            if (signupSubjectsLegend) {
+                signupSubjectsLegend.innerHTML = isTutor
+                    ? 'Subjects you teach <span class="form-label-hint">(select one or more)</span>'
+                    : 'Subjects <span class="form-label-hint">(select one or more)</span>';
+            }
         }
 
         function setFieldError(fieldName, message) {
@@ -563,14 +628,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 fullName: fullNameEl,
                 email: emailEl,
                 password: passwordEl,
-                studentSubject: studentSubjectEl,
+                signupSubjects: signupSubjectsWrap,
                 studentLevel: studentLevelEl,
             };
             const field = fieldMap[fieldName];
             const errorNode = fieldErrorMap[fieldName];
-            if (!field || !errorNode) return;
+            if (!errorNode) return;
             errorNode.textContent = message || '';
-            field.classList.toggle('is-invalid', !!message);
+            if (field) field.classList.toggle('is-invalid', !!message);
         }
 
         function clearAllFieldErrors() {
@@ -581,10 +646,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const email = emailEl?.value.trim() || '';
             const password = passwordEl?.value || '';
             const fullName = fullNameEl?.value.trim() || '';
-            const studentSubject = studentSubjectEl?.value || '';
             const studentLevel = studentLevelEl?.value || '';
             const isRegister = mode === 'register';
-            const isStudent = roleEl?.value === 'student';
+            const role = roleEl?.value;
+            const isStudent = role === 'student';
+            const needsSubjects = isRegister && (role === 'student' || role === 'tutor');
 
             if (fieldName === 'email') {
                 if (!email) return 'Email is required';
@@ -600,8 +666,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isRegister && !fullName) return 'Full name is required';
                 return '';
             }
-            if (fieldName === 'studentSubject') {
-                if (isRegister && isStudent && !studentSubject) return 'Select a subject';
+            if (fieldName === 'signupSubjects') {
+                if (needsSubjects && regSubjectCheckedCount() < 1) return 'Select at least one subject';
                 return '';
             }
             if (fieldName === 'studentLevel') {
@@ -615,8 +681,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const fields = ['email', 'password'];
             if (mode === 'register') {
                 fields.push('fullName');
-                if (roleEl?.value === 'student') {
-                    fields.push('studentSubject', 'studentLevel');
+                const r = roleEl?.value;
+                if (r === 'student') {
+                    fields.push('signupSubjects', 'studentLevel');
+                } else if (r === 'tutor') {
+                    fields.push('signupSubjects');
                 }
             }
 
@@ -641,18 +710,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         modeRegisterBtn?.addEventListener('click', () => { mode = 'register'; applyMode(); });
         modeLoginBtn?.addEventListener('click', () => { mode = 'login'; applyMode(); });
-        roleEl?.addEventListener('change', updateStudentPrefsVisibility);
+        roleEl?.addEventListener('change', () => {
+            updateSignupFieldsVisibility();
+            setFieldError('signupSubjects', validateField('signupSubjects'));
+            setFieldError('studentLevel', validateField('studentLevel'));
+        });
         emailEl?.addEventListener('input', () => setFieldError('email', validateField('email')));
         emailEl?.addEventListener('blur', () => setFieldError('email', validateField('email')));
         passwordEl?.addEventListener('input', () => setFieldError('password', validateField('password')));
         passwordEl?.addEventListener('blur', () => setFieldError('password', validateField('password')));
         fullNameEl?.addEventListener('input', () => setFieldError('fullName', validateField('fullName')));
         fullNameEl?.addEventListener('blur', () => setFieldError('fullName', validateField('fullName')));
-        studentSubjectEl?.addEventListener('change', () => setFieldError('studentSubject', validateField('studentSubject')));
         studentLevelEl?.addEventListener('change', () => setFieldError('studentLevel', validateField('studentLevel')));
-        roleEl?.addEventListener('change', () => {
-            setFieldError('studentSubject', validateField('studentSubject'));
-            setFieldError('studentLevel', validateField('studentLevel'));
+        signupSubjectsWrap?.addEventListener('change', (e) => {
+            if (e.target.matches?.('input[name="reg-subject"]')) {
+                setFieldError('signupSubjects', validateField('signupSubjects'));
+            }
         });
         switchText?.addEventListener('click', (e) => {
             if (e.target.closest?.('.auth-link') || e.target.classList?.contains('auth-link')) {
@@ -672,12 +745,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = passwordEl.value;
             const fullName = fullNameEl?.value?.trim();
             const role = roleEl?.value ?? 'student';
+            const pickedSubjects = Array.from(document.querySelectorAll('input[name="reg-subject"]:checked')).map(cb => cb.value);
 
             try {
                 setSubmittingState(true);
-                const payload = mode === 'register'
-                    ? { fullName, email, password, role }
-                    : { email, password };
+                let payload;
+                if (mode === 'register') {
+                    payload = { fullName, email, password, role };
+                    if (role === 'student') {
+                        payload.studentSubjects = pickedSubjects;
+                        payload.studentLevel = studentLevelEl?.value || '';
+                    } else if (role === 'tutor') {
+                        payload.tutorSubjects = pickedSubjects;
+                    }
+                } else {
+                    payload = { email, password };
+                }
 
                 const result = await apiRequest(mode === 'register' ? '/auth/register' : '/auth/login', {
                     method: 'POST',
@@ -698,7 +781,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 if (errorEl) {
                     const msg = err?.message || 'Unable to continue';
-                    errorEl.textContent = msg === 'Failed to fetch' ? 'Cannot reach server. Is the API running on port 8787?' : msg;
+                    errorEl.textContent = msg === 'Failed to fetch' ? 'Cannot reach server. Is the API running on port 7503?' : msg;
                     errorEl.classList.add('visible');
                 }
             } finally {
@@ -877,7 +960,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <h3 style="color:#1e293b;margin-bottom:15px">About</h3>
                     <p style="color:#64748b;line-height:1.6;margin-bottom:25px">${selectedTutor.bio || 'No bio provided yet.'}</p>
                     <h3 style="color:#1e293b;margin-bottom:15px">Availability</h3>
-                    <p style="color:#64748b;margin-bottom:25px"><i class="fas fa-calendar-alt" style="color:#6366f1"></i> <strong>Next available:</strong> Various slots — book to confirm</p>
+                    <p style="color:#64748b;margin-bottom:25px"><i class="fas fa-calendar-alt" style="color:#6366f1"></i> <strong>Next available:</strong> Various slots - book to confirm</p>
                 </div>
             `;
             container.querySelector('[data-navigate="booking"]')?.addEventListener('click', () => {
@@ -886,7 +969,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Booking page: show selected tutor in summary
+    // Booking page: load tutor slots, reserve booking, then mock payment
     if (currentFromPath === 'booking') {
         const summary = document.getElementById('booking-tutor-summary');
         const summaryRate = document.getElementById('booking-rate');
@@ -895,12 +978,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const summarySubtotal = document.getElementById('booking-subtotal');
         const summaryTime = document.getElementById('summary-time');
         const summaryDuration = document.getElementById('summary-duration');
-        const confirmBtn = document.getElementById('booking-confirm-btn');
         const bookingErrorEl = document.getElementById('booking-error');
         const bookingConfirmationEl = document.getElementById('booking-confirmation');
-        const durationButtons = Array.from(document.querySelectorAll('[data-duration]'));
-        const slotEls = Array.from(document.querySelectorAll('.time-slot'));
+        const slotsLoadingEl = document.getElementById('slots-loading');
+        const slotsEmptyEl = document.getElementById('slots-empty');
+        const slotsRangeLabel = document.getElementById('slots-range-label');
+        const timeSlotsEl = document.getElementById('time-slots');
+        const reserveBtn = document.getElementById('booking-reserve-btn');
+        const payBtn = document.getElementById('booking-pay-btn');
+        const postReserveEl = document.getElementById('booking-post-reserve');
+        const paymentBanner = document.getElementById('payment-banner');
+        const subjectInput = document.getElementById('booking-subject');
+        const paymentMethodEl = document.getElementById('payment-method');
         const { selectedTutor } = getFlowState();
+
+        let slotsData = [];
+        let selectedSlot = null;
+        let pendingBooking = null;
+        let saving = false;
 
         function setBookingError(message) {
             if (!bookingErrorEl) return;
@@ -908,15 +1003,18 @@ document.addEventListener('DOMContentLoaded', () => {
             bookingErrorEl.classList.toggle('visible', !!message);
         }
 
-        function setBookingConfirmation(message) {
-            if (!bookingConfirmationEl) return;
-            bookingConfirmationEl.textContent = message || '';
-            bookingConfirmationEl.classList.toggle('visible', !!message);
+        function setPaymentBanner(type, message) {
+            if (!paymentBanner) return;
+            paymentBanner.textContent = message || '';
+            paymentBanner.classList.remove('payment-banner--ok', 'payment-banner--err');
+            if (type === 'ok') paymentBanner.classList.add('payment-banner--ok');
+            if (type === 'err') paymentBanner.classList.add('payment-banner--err');
+            paymentBanner.style.display = message ? 'block' : 'none';
         }
 
-        function getSelectedDurationMinutes() {
-            const activeBtn = durationButtons.find(btn => btn.style.background === 'rgb(79, 70, 229)' || btn.style.background === '#4f46e5');
-            return Number(activeBtn?.dataset.duration || 30);
+        function setBookingConfirmation(html) {
+            if (!bookingConfirmationEl) return;
+            bookingConfirmationEl.innerHTML = html || '';
         }
 
         function updateBookingTotals(rate, durationMinutes) {
@@ -929,79 +1027,183 @@ document.addEventListener('DOMContentLoaded', () => {
             if (summaryTotal) summaryTotal.textContent = '$' + total.toFixed(2);
         }
 
-        function refreshBookingSummary() {
+        function refreshSummaryFromSlot() {
             const rate = selectedTutor?.hourlyRate || 0;
-            const selectedSlot = document.querySelector('.time-slot.selected');
-            const durationMinutes = getSelectedDurationMinutes();
-            if (summaryDuration) summaryDuration.textContent = `${durationMinutes} minutes`;
-            if (selectedSlot && summaryTime) {
-                summaryTime.textContent = `Tomorrow, ${selectedSlot.dataset.time || selectedSlot.textContent.trim()}`;
+            if (!selectedSlot) {
+                if (summaryTime) summaryTime.textContent = '-';
+                if (summaryDuration) summaryDuration.textContent = '-';
+                updateBookingTotals(rate, 60);
+                return;
             }
-            updateBookingTotals(rate, durationMinutes);
+            const start = new Date(selectedSlot.startAt);
+            const timeStr = start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            const dateStr = start.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            if (summaryTime) summaryTime.textContent = `${dateStr} · ${timeStr}`;
+            const dm = Number(selectedSlot.durationMinutes) || 60;
+            if (summaryDuration) summaryDuration.textContent = `${dm} minutes`;
+            updateBookingTotals(rate, dm);
         }
 
-        durationButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                setBookingError('');
-                setBookingConfirmation('');
-                refreshBookingSummary();
-            });
-        });
-
-        slotEls.forEach(slot => {
-            slot.addEventListener('click', () => {
-                if (!slot.classList.contains('unavailable')) {
+        function renderSlotButtons() {
+            if (!timeSlotsEl) return;
+            timeSlotsEl.innerHTML = '';
+            if (!slotsData.length) return;
+            slotsData.forEach((slot) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'time-slot' + (slot.available === false ? ' unavailable' : '');
+                btn.dataset.slotId = slot.id;
+                const start = new Date(slot.startAt);
+                const label = start.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+                btn.textContent = slot.available === false ? `${label} (taken)` : label;
+                btn.setAttribute('aria-disabled', slot.available === false ? 'true' : 'false');
+                btn.addEventListener('click', () => {
+                    if (slot.available === false) {
+                        setBookingError('That slot was just taken. Please pick another time.');
+                        return;
+                    }
                     setBookingError('');
-                    setBookingConfirmation('');
-                    refreshBookingSummary();
-                }
+                    setPaymentBanner('', '');
+                    timeSlotsEl.querySelectorAll('.time-slot').forEach((el) => el.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    selectedSlot = slot;
+                    refreshSummaryFromSlot();
+                });
+                timeSlotsEl.appendChild(btn);
             });
-        });
+        }
+
+        async function loadSlots() {
+            if (!selectedTutor?.id) return;
+            const from = new Date();
+            from.setHours(0, 0, 0, 0);
+            const to = new Date(from);
+            to.setDate(to.getDate() + 21);
+            if (slotsRangeLabel) {
+                slotsRangeLabel.textContent = `Showing ${from.toLocaleDateString()} - ${to.toLocaleDateString()}`;
+            }
+            if (slotsLoadingEl) slotsLoadingEl.style.display = 'block';
+            if (slotsEmptyEl) slotsEmptyEl.style.display = 'none';
+            try {
+                const res = await apiRequest(
+                    `/tutors/${encodeURIComponent(selectedTutor.id)}/slots?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`,
+                    { auth: false },
+                );
+                slotsData = res.slots || [];
+                if (slotsLoadingEl) slotsLoadingEl.style.display = 'none';
+                if (!slotsData.length && slotsEmptyEl) {
+                    slotsEmptyEl.style.display = 'block';
+                }
+                renderSlotButtons();
+            } catch (e) {
+                if (slotsLoadingEl) slotsLoadingEl.style.display = 'none';
+                setBookingError(e?.message || 'Could not load availability.');
+            }
+        }
 
         if (summary && selectedTutor) {
             const initials = (selectedTutor.fullName || 'T').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-            const rate = selectedTutor.hourlyRate || 0;
             summary.innerHTML = `
                 <div class="tutor-avatar" style="width:50px;height:50px;font-size:18px">${initials}</div>
                 <div style="margin-left:15px">
-                    <h4 style="color:#1e293b">${selectedTutor.fullName || 'Tutor'}</h4>
+                    <h4 style="color:#1e293b;margin:0">${selectedTutor.fullName || 'Tutor'}</h4>
                     <div style="color:#64748b;font-size:14px">${(selectedTutor.subjects || []).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ') || 'Tutor'}</div>
                 </div>
             `;
-            refreshBookingSummary();
+            refreshSummaryFromSlot();
+            loadSlots();
         } else {
-            if (confirmBtn) confirmBtn.disabled = false;
-            setBookingError('Select a tutor from Find Tutor before confirming your booking.');
+            setBookingError('Select a tutor from Find Tutor before booking.');
+            if (reserveBtn) reserveBtn.disabled = true;
         }
 
-        confirmBtn?.addEventListener('click', () => {
+        reserveBtn?.addEventListener('click', async () => {
             setBookingError('');
-            setBookingConfirmation('');
-
+            setPaymentBanner('', '');
             if (!selectedTutor) {
-                setBookingError('Choose a tutor first to continue with booking.');
+                setBookingError('Choose a tutor first.');
                 return;
             }
-
-            const selectedSlot = document.querySelector('.time-slot.selected');
-            if (!selectedSlot || selectedSlot.classList.contains('unavailable')) {
+            if (!selectedSlot || selectedSlot.available === false) {
                 setBookingError('Please select an available time slot.');
                 return;
             }
+            const { token, user } = getAuth();
+            if (!token || user?.role !== 'student') {
+                setBookingError('Please sign in as a student to reserve a session.');
+                return;
+            }
+            if (saving) return;
+            saving = true;
+            reserveBtn.disabled = true;
+            reserveBtn.classList.add('is-loading');
+            try {
+                const subject = (subjectInput?.value || '').trim();
+                const body = {
+                    tutorId: selectedTutor.id,
+                    slotId: selectedSlot.id,
+                    subject: subject || (selectedTutor.subjects && selectedTutor.subjects[0]) || 'Tutoring session',
+                };
+                const res = await apiRequest('/bookings', { method: 'POST', body });
+                pendingBooking = res.booking;
+                sessionStorage.setItem('tutorly_pending_booking', JSON.stringify(pendingBooking));
+                setBookingConfirmation(`
+                    <strong>Reservation received</strong>
+                    <p style="margin:8px 0 0;color:#475569;font-size:14px;">Booking ID: <code>${pendingBooking.id}</code></p>
+                    <p style="margin:6px 0 0;color:#475569;font-size:14px;">Status: <span class="status-badge status-badge--pending">Pending payment</span></p>
+                `);
+                if (postReserveEl) postReserveEl.style.display = 'block';
+                reserveBtn.style.display = 'none';
+            } catch (err) {
+                const code = err?.payload?.error;
+                if (code === 'SLOT_TAKEN' || err?.status === 409) {
+                    setBookingError('That slot is no longer available. Please choose another time.');
+                    await loadSlots();
+                } else {
+                    setBookingError(err?.message || 'Could not create booking.');
+                }
+                reserveBtn.disabled = false;
+            } finally {
+                saving = false;
+                reserveBtn?.classList.remove('is-loading');
+            }
+        });
 
-            const durationMinutes = getSelectedDurationMinutes();
-            const timeLabel = selectedSlot.dataset.time || selectedSlot.textContent.trim();
-            confirmBtn.disabled = true;
-            confirmBtn.classList.add('is-loading');
-
-            window.setTimeout(() => {
-                setBookingConfirmation(`Confirmed for Tomorrow at ${timeLabel} (${durationMinutes} minutes). Redirecting to your dashboard...`);
-                confirmBtn.classList.remove('is-loading');
-                window.setTimeout(() => {
-                    navigateTo('dashboard');
-                }, 1100);
-            }, 500);
-        }
+        payBtn?.addEventListener('click', async () => {
+            setBookingError('');
+            setPaymentBanner('', '');
+            const raw = sessionStorage.getItem('tutorly_pending_booking');
+            const booking = pendingBooking || (raw ? JSON.parse(raw) : null);
+            if (!booking?.id) {
+                setBookingError('No pending booking. Reserve a session first.');
+                return;
+            }
+            if (saving) return;
+            saving = true;
+            payBtn.disabled = true;
+            payBtn.classList.add('is-loading');
+            const method = paymentMethodEl?.value || 'card';
+            try {
+                const res = await apiRequest('/payments', {
+                    method: 'POST',
+                    body: { bookingId: booking.id, method },
+                });
+                setPaymentBanner('ok', res.success ? 'Payment successful. Your session is confirmed.' : 'Confirmed.');
+                sessionStorage.setItem('tutorly_last_booking', JSON.stringify(res.booking));
+                sessionStorage.removeItem('tutorly_pending_booking');
+                window.setTimeout(() => navigateTo('dashboard'), 900);
+            } catch (err) {
+                if (err?.status === 402) {
+                    setPaymentBanner('err', err?.message || 'Payment was declined. Your booking stays pending.');
+                } else {
+                    setBookingError(err?.message || 'Payment failed.');
+                }
+                payBtn.disabled = false;
+            } finally {
+                saving = false;
+                payBtn?.classList.remove('is-loading');
+            }
+        });
     }
 
     // Dashboard page: load live data for tutors, show student prompt otherwise
@@ -1023,6 +1225,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const statRating = document.getElementById('stat-rating');
             const statRate = document.getElementById('stat-rate');
             const sessionsList = document.getElementById('dashboard-sessions-list');
+            const tutorBookingHighlightId = new URLSearchParams(window.location.search).get('booking');
 
             async function loadDashboard() {
                 try {
@@ -1045,26 +1248,34 @@ document.addEventListener('DOMContentLoaded', () => {
                         statusEl.className = 'verification-badge' + (status === 'approved' ? '' : ' verification-pending');
                     }
                     if (statEarnings) statEarnings.textContent = '$' + (stats?.earningsThisMonth ?? 0).toFixed(2);
-                    if (statUpcoming) statUpcoming.textContent = stats?.upcomingCount ?? bookings.length;
-                    if (statRating) statRating.textContent = (tutor.averageRating ?? 0) > 0 ? (tutor.averageRating || 0).toFixed(1) : '—';
-                    if (statRate) statRate.textContent = (stats?.bookingRate ?? 0) > 0 ? (stats.bookingRate + '%') : '—';
+                    // Matches `/tutors/me/bookings`: future sessions excluding cancelled/completed.
+                    if (statUpcoming) statUpcoming.textContent = String(bookings.length);
+                    if (statRating) statRating.textContent = (tutor.averageRating ?? 0) > 0 ? (tutor.averageRating || 0).toFixed(1) : '-';
+                    if (statRate) statRate.textContent = (stats?.bookingRate ?? 0) > 0 ? (stats.bookingRate + '%') : '-';
 
                     if (bookings.length === 0) {
                         sessionsList.innerHTML = '<p class="search-empty">No upcoming sessions</p>';
                     } else {
-                        sessionsList.innerHTML = bookings.map(b => {
+                        sessionsList.innerHTML = bookings.map((b) => {
                             const start = new Date(b.startAt);
                             const end = new Date(start.getTime() + (b.durationMinutes || 60) * 60000);
                             const timeStr = start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) + ' - ' + end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
                             const dateStr = start.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                            const statusColor = b.status === 'confirmed' ? '#10b981' : b.status === 'pending' ? '#f59e0b' : '#64748b';
-                            return `<div class="session-item">
-                                <div><div style="font-weight:600">${b.studentName || 'Student'}</div><div style="color:#6b7280;font-size:14px">${b.subject || 'Session'}</div></div>
-                                <div><div style="font-weight:600">${dateStr} • ${timeStr}</div><div style="color:${statusColor};font-size:14px"><i class="fas fa-circle" style="font-size:8px"></i> ${(b.status || 'confirmed').charAt(0).toUpperCase() + (b.status || '').slice(1)}</div></div>
-                                <button class="nav-btn" style="background:#f1f5f9;color:#0ea5e9" disabled><i class="fas fa-video"></i> Join</button>
+                            const st = (b.status || 'confirmed').toLowerCase();
+                            const badgeClass = st === 'confirmed' ? 'status-badge status-badge--ok' : st === 'pending' ? 'status-badge status-badge--pending' : 'status-badge';
+                            const join = b.meetingLink && st === 'confirmed'
+                                ? `<a class="nav-btn session-join-link" href="${b.meetingLink}" target="_blank" rel="noopener noreferrer"><i class="fas fa-video"></i> Join</a>`
+                                : `<button type="button" class="nav-btn" style="background:#f1f5f9;color:#94a3b8" disabled title="Available after payment confirms"><i class="fas fa-video"></i> Join</button>`;
+                            const bookingMeta = `<div class="booking-session-meta"><span class="booking-session-meta-id">${shortBookingRef(b.id)}</span><a class="booking-ref-link" href="${bookingDetailPageHref(b.id)}">Details</a></div>`;
+                            return `<div class="session-item booking-session-row" data-booking-id="${b.id}">
+                                <div><div style="font-weight:600">${b.studentName || 'Student'}</div><div style="color:#6b7280;font-size:14px">${b.subject || 'Session'}</div>${bookingMeta}</div>
+                                <div><div style="font-weight:600">${dateStr} • ${timeStr}</div><div style="margin-top:4px"><span class="${badgeClass}">${st.charAt(0).toUpperCase() + st.slice(1)}</span></div></div>
+                                ${join}
                             </div>`;
                         }).join('');
                     }
+
+                    highlightDashboardBookingRow(sessionsList, tutorBookingHighlightId);
 
                     window.__tutorlyDashboardTutor = tutor;
                 } catch (err) {
@@ -1154,6 +1365,164 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             tutorSection.style.display = 'none';
             studentSection.style.display = 'block';
+
+            const studentBookingsEl = document.getElementById('dashboard-student-bookings');
+            const studentBanner = document.getElementById('dashboard-student-banner');
+
+            if (token && user && user.role === 'student') {
+                const studentBookingHighlightId = new URLSearchParams(window.location.search).get('booking');
+                const prefsWrap = document.getElementById('dashboard-student-prefs');
+                const prefsView = document.getElementById('dashboard-student-prefs-view');
+                const prefsForm = document.getElementById('dashboard-student-prefs-form');
+                const prefsSummary = document.getElementById('dashboard-student-prefs-summary');
+                const prefsEditBtn = document.getElementById('dashboard-student-prefs-edit');
+                const prefsCancel = document.getElementById('dashboard-prefs-cancel');
+                const prefsError = document.getElementById('dashboard-prefs-error');
+                const prefsLevel = document.getElementById('dashboard-prefs-level');
+
+                function renderStudentPrefsSummary(u) {
+                    if (!prefsSummary) return;
+                    const subs = (u.studentSubjects || []).map(formatSubjectSlugLabel).join(', ') || 'None selected';
+                    const lvl = STUDENT_LEVEL_LABELS[u.studentLevel] || formatSubjectSlugLabel(u.studentLevel) || '-';
+                    prefsSummary.textContent = `Subjects: ${subs}. Level: ${lvl}.`;
+                }
+
+                function syncStudentPrefsFormFromUser(u) {
+                    document.querySelectorAll('input[name="dashboard-pref-subject"]').forEach((cb) => {
+                        cb.checked = (u.studentSubjects || []).includes(cb.value);
+                    });
+                    if (prefsLevel) prefsLevel.value = u.studentLevel || '';
+                }
+
+                function showStudentPrefsView() {
+                    if (prefsForm) prefsForm.style.display = 'none';
+                    if (prefsView) prefsView.style.display = '';
+                    if (prefsError) prefsError.textContent = '';
+                }
+
+                async function loadStudentLearningPrefs() {
+                    if (prefsWrap) prefsWrap.style.display = 'block';
+                    let u = { ...user };
+                    try {
+                        const me = await apiRequest('/auth/me');
+                        u = { ...u, ...me.user };
+                        setAuth({ token, user: u });
+                    } catch {
+                        u = { ...u, studentSubjects: u.studentSubjects || [], studentLevel: u.studentLevel || '' };
+                    }
+                    renderStudentPrefsSummary(u);
+                    syncStudentPrefsFormFromUser(u);
+                }
+
+                prefsEditBtn?.addEventListener('click', () => {
+                    syncStudentPrefsFormFromUser(getAuth().user);
+                    if (prefsError) prefsError.textContent = '';
+                    if (prefsView) prefsView.style.display = 'none';
+                    if (prefsForm) prefsForm.style.display = 'block';
+                });
+
+                prefsCancel?.addEventListener('click', showStudentPrefsView);
+
+                prefsForm?.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    if (prefsError) prefsError.textContent = '';
+                    const studentSubjects = Array.from(document.querySelectorAll('input[name="dashboard-pref-subject"]:checked')).map((cb) => cb.value);
+                    const studentLevel = prefsLevel?.value || '';
+                    if (studentSubjects.length < 1) {
+                        if (prefsError) prefsError.textContent = 'Select at least one subject.';
+                        return;
+                    }
+                    if (!studentLevel) {
+                        if (prefsError) prefsError.textContent = 'Select an education level.';
+                        return;
+                    }
+                    try {
+                        const res = await apiRequest('/auth/me', {
+                            method: 'PATCH',
+                            body: { studentSubjects, studentLevel },
+                        });
+                        setAuth({ token: getAuth().token, user: { ...getAuth().user, ...res.user } });
+                        renderStudentPrefsSummary(res.user);
+                        showStudentPrefsView();
+                    } catch (err) {
+                        if (prefsError) prefsError.textContent = err?.message || 'Could not save preferences.';
+                    }
+                });
+
+                const lastRaw = sessionStorage.getItem('tutorly_last_booking');
+                if (lastRaw && studentBanner) {
+                    try {
+                        const b = JSON.parse(lastRaw);
+                        const when = new Date(b.startAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+                        studentBanner.innerHTML = `<div class="payment-banner payment-banner--ok"><strong>You're all set.</strong> Session scheduled for ${when}.${b.meetingLink ? ` <a href="${b.meetingLink}" target="_blank" rel="noopener">Open meeting link</a>` : ''}</div>`;
+                        studentBanner.style.display = 'block';
+                        sessionStorage.removeItem('tutorly_last_booking');
+                    } catch {
+                        /* ignore */
+                    }
+                }
+
+                loadStudentLearningPrefs();
+
+                function renderStudentSessionRow(b) {
+                    const start = new Date(b.startAt);
+                    const end = new Date(start.getTime() + (b.durationMinutes || 60) * 60000);
+                    const timeStr = start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) + ' – ' + end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                    const dateStr = start.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                    const st = (b.status || '').toLowerCase();
+                    const badgeClass = st === 'confirmed' ? 'status-badge status-badge--ok' : st === 'pending' ? 'status-badge status-badge--pending' : 'status-badge';
+                    const join = b.meetingLink && st === 'confirmed'
+                        ? `<a class="btn-secondary session-join-link" href="${b.meetingLink}" target="_blank" rel="noopener noreferrer"><i class="fas fa-video"></i> Join</a>`
+                        : `<button type="button" class="btn-secondary" disabled style="opacity:0.6"><i class="fas fa-video"></i> Join</button>`;
+                    const bookingMeta = `<div class="booking-session-meta"><span class="booking-session-meta-id">${shortBookingRef(b.id)}</span><a class="booking-ref-link" href="${bookingDetailPageHref(b.id)}">Details</a></div>`;
+                    return `<div class="session-item dashboard-student-session booking-session-row" data-booking-id="${b.id}">
+                                <div><div style="font-weight:600">${b.tutorName || 'Tutor'}</div><div style="color:#6b7280;font-size:14px">${b.subject || 'Session'}</div>${bookingMeta}</div>
+                                <div><div style="font-weight:600">${dateStr} · ${timeStr}</div><div style="margin-top:4px"><span class="${badgeClass}">${st ? st.charAt(0).toUpperCase() + st.slice(1) : '-'}</span></div></div>
+                                ${join}
+                            </div>`;
+                }
+
+                async function loadStudentDashboard() {
+                    if (!studentBookingsEl) return;
+                    studentBookingsEl.innerHTML = '<p class="search-empty">Loading your sessions…</p>';
+                    try {
+                        const [upRes, pastRes] = await Promise.all([
+                            apiRequest('/bookings/me?upcoming=1'),
+                            apiRequest('/bookings/me?past=1'),
+                        ]);
+                        const upcoming = upRes.bookings || [];
+                        const pastRaw = pastRes.bookings || [];
+                        const upcomingIds = new Set(upcoming.map((b) => b.id));
+                        const past = pastRaw.filter((b) => !upcomingIds.has(b.id));
+
+                        if (upcoming.length === 0 && past.length === 0) {
+                            studentBookingsEl.innerHTML = '<p class="search-empty">No sessions yet. Use Find Tutor to book your first lesson.</p>';
+                            return;
+                        }
+
+                        let html = '';
+                        html += '<h3 class="dashboard-student-heading">Upcoming sessions</h3>';
+                        if (upcoming.length === 0) {
+                            html += '<p class="search-empty dashboard-bookings-empty">No upcoming sessions.</p>';
+                        } else {
+                            html += upcoming.map(renderStudentSessionRow).join('');
+                        }
+                        html += '<h3 class="dashboard-student-heading dashboard-past-heading">Past sessions</h3>';
+                        if (past.length === 0) {
+                            html += '<p class="search-empty dashboard-bookings-empty">No past sessions yet.</p>';
+                        } else {
+                            html += past.map(renderStudentSessionRow).join('');
+                        }
+                        studentBookingsEl.innerHTML = html;
+                        highlightDashboardBookingRow(studentBookingsEl, studentBookingHighlightId);
+                    } catch (e) {
+                        studentBookingsEl.innerHTML = '<p class="search-empty">' + (e.message || 'Could not load sessions.') + '</p>';
+                    }
+                }
+                loadStudentDashboard();
+            } else if (studentBookingsEl) {
+                studentBookingsEl.innerHTML = '';
+            }
         }
     }
 

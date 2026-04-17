@@ -8,13 +8,22 @@ import crypto from "crypto";
 const usersById = new Map();
 const usersByEmail = new Map();
 
-export function createUser({ fullName, email, passwordHash, role }) {
+export function createUser({
+  fullName,
+  email,
+  passwordHash,
+  role,
+  studentSubjects = [],
+  studentLevel = "",
+}) {
   const normalizedEmail = email.trim().toLowerCase();
   if (usersByEmail.has(normalizedEmail)) {
     const err = new Error("Email already in use");
     err.code = "EMAIL_IN_USE";
     throw err;
   }
+
+  const subs = Array.isArray(studentSubjects) ? studentSubjects : [];
 
   const user = {
     id: crypto.randomUUID(),
@@ -23,6 +32,8 @@ export function createUser({ fullName, email, passwordHash, role }) {
     passwordHash,
     role,
     status: "active",
+    studentSubjects: subs,
+    studentLevel: String(studentLevel || "").trim(),
     createdAt: new Date().toISOString(),
   };
 
@@ -31,17 +42,26 @@ export function createUser({ fullName, email, passwordHash, role }) {
   return { ...user };
 }
 
+function withUserDefaults(u) {
+  if (!u) return null;
+  return {
+    ...u,
+    studentSubjects: u.studentSubjects ?? [],
+    studentLevel: u.studentLevel ?? "",
+  };
+}
+
 export function findUserByEmail(email) {
   if (!email) return null;
   const normalizedEmail = email.trim().toLowerCase();
   const user = usersByEmail.get(normalizedEmail);
-  return user ? { ...user } : null;
+  return withUserDefaults(user);
 }
 
 export function findUserById(id) {
   if (!id) return null;
   const user = usersById.get(id);
-  return user ? { ...user } : null;
+  return withUserDefaults(user);
 }
 
 export function listUsers() {
@@ -66,6 +86,12 @@ export function updateUser(userId, updates) {
   const user = usersById.get(userId);
   if (!user) return null;
   if (updates.fullName !== undefined) user.fullName = String(updates.fullName || "").trim();
+  if (updates.studentSubjects !== undefined) {
+    user.studentSubjects = Array.isArray(updates.studentSubjects) ? [...updates.studentSubjects] : [];
+  }
+  if (updates.studentLevel !== undefined) {
+    user.studentLevel = String(updates.studentLevel || "").trim();
+  }
   return { ...user };
 }
 
