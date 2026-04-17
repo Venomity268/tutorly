@@ -15,6 +15,15 @@ function sessionEndMs(b) {
   return start + (Number(b.durationMinutes) || 60) * 60000;
 }
 
+function sessionEndDate(b) {
+  return new Date(sessionEndMs(b));
+}
+
+function hasRealizedOutcome(b, now = new Date()) {
+  if (!["confirmed", "completed"].includes(b.status)) return false;
+  return sessionEndMs(b) <= now.getTime();
+}
+
 /** Still on your calendar: session not ended yet (includes in-progress) and status is active */
 function isUpcomingBooking(b, now = new Date()) {
   const nowMs = now.getTime();
@@ -48,6 +57,7 @@ export function createBooking({
   status = "pending",
   slotId = null,
   meetingLink = null,
+  hourlyRateSnapshot = null,
 }) {
   const booking = {
     id: crypto.randomUUID(),
@@ -60,6 +70,7 @@ export function createBooking({
     status: ["confirmed", "pending", "completed", "cancelled"].includes(status) ? status : "pending",
     slotId: slotId || null,
     meetingLink: meetingLink || null,
+    hourlyRateSnapshot: Number.isFinite(Number(hourlyRateSnapshot)) ? Number(hourlyRateSnapshot) : null,
     createdAt: new Date().toISOString(),
   };
 
@@ -140,18 +151,26 @@ export function getTutorStats(tutorId, tutorHourlyRate) {
   const all = (bookingsByTutorId.get(tutorId) || []).map((b) => ({ ...b }));
   const now = new Date();
   const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-  const completed = all.filter((b) => b.status === "completed");
-  const completedThisMonth = completed.filter((b) => new Date(b.startAt) >= thisMonthStart);
-  const earnings = completedThisMonth.reduce((sum, b) => {
+  // Realized sessions are those that were paid/confirmed and have already ended.
+  const realized = all.filter((b) => hasRealizedOutcome(b, now));
+  const realizedThisMonth = realized.filter((b) => {
+    const end = sessionEndDate(b);
+    return end >= thisMonthStart && end < nextMonthStart;
+  });
+  const earnings = realizedThisMonth.reduce((sum, b) => {
     const hours = (b.durationMinutes || 60) / 60;
-    return sum + (tutorHourlyRate || 0) * hours;
+    const effectiveRate = Number.isFinite(Number(b.hourlyRateSnapshot))
+      ? Number(b.hourlyRateSnapshot)
+      : (tutorHourlyRate || 0);
+    return sum + effectiveRate * hours;
   }, 0);
 
   const upcoming = all.filter((b) => isUpcomingBooking(b, now));
-  const totalBookings = all.filter((b) => !["cancelled"].includes(b.status)).length;
-  const completedCount = completed.length;
-  const bookingRate = totalBookings > 0 ? Math.round((completedCount / totalBookings) * 100) : 0;
+  const totalBookings = all.filter((b) => b.status !== "cancelled").length;
+  const bookedCount = all.filter((b) => ["confirmed", "completed"].includes(b.status)).length;
+  const bookingRate = totalBookings > 0 ? Math.round((bookedCount / totalBookings) * 100) : 0;
 
   return {
     earningsThisMonth: Math.round(earnings * 100) / 100,

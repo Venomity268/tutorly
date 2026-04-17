@@ -30,6 +30,19 @@ export function findSlotById(id) {
   return s ? { ...s } : null;
 }
 
+export function deleteSlot(id) {
+  if (!id) return false;
+  const existing = slotsById.get(id);
+  if (!existing) return false;
+  slotsById.delete(id);
+  const tutorSlots = slotsByTutorId.get(existing.tutorId) || [];
+  slotsByTutorId.set(
+    existing.tutorId,
+    tutorSlots.filter((slot) => slot.id !== id),
+  );
+  return true;
+}
+
 export function listSlotsByTutorId(tutorId, { from, to } = {}) {
   const list = (slotsByTutorId.get(tutorId) || []).map((s) => ({ ...s }));
   const fromD = from ? new Date(from) : null;

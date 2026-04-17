@@ -1253,7 +1253,67 @@ document.addEventListener('DOMContentLoaded', () => {
             const statRating = document.getElementById('stat-rating');
             const statRate = document.getElementById('stat-rate');
             const sessionsList = document.getElementById('dashboard-sessions-list');
+            const availabilityForm = document.getElementById('dashboard-availability-form');
+            const availabilityDateEl = document.getElementById('availability-date');
+            const availabilityTimeEl = document.getElementById('availability-time');
+            const availabilityDurationEl = document.getElementById('availability-duration');
+            const availabilityListEl = document.getElementById('dashboard-availability-list');
+            const availabilityErrorEl = document.getElementById('dashboard-availability-error');
             const tutorBookingHighlightId = new URLSearchParams(window.location.search).get('booking');
+
+            function setAvailabilityError(message) {
+                if (!availabilityErrorEl) return;
+                availabilityErrorEl.textContent = message || '';
+                availabilityErrorEl.classList.toggle('visible', !!message);
+            }
+
+            function renderAvailability(slots) {
+                if (!availabilityListEl) return;
+                if (!slots.length) {
+                    availabilityListEl.innerHTML = '<p class="search-empty">No availability slots yet</p>';
+                    return;
+                }
+                availabilityListEl.innerHTML = slots.map((slot) => {
+                    const start = new Date(slot.startAt);
+                    const end = new Date(start.getTime() + (slot.durationMinutes || 60) * 60000);
+                    const dateLabel = start.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                    const timeLabel = `${start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} - ${end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+                    const statusBadge = slot.available
+                        ? '<span class="status-badge status-badge--ok">Open</span>'
+                        : '<span class="status-badge status-badge--pending">Booked</span>';
+                    const removeAction = slot.available
+                        ? `<button type="button" class="btn-secondary dashboard-slot-remove" data-slot-id="${slot.id}" style="width:auto;padding:10px 12px;">Remove</button>`
+                        : '<button type="button" class="btn-secondary" disabled style="width:auto;padding:10px 12px;opacity:0.6;">Booked</button>';
+                    return `<div class="session-item">
+                        <div>
+                            <div style="font-weight:600">${dateLabel}</div>
+                            <div style="color:#6b7280;font-size:14px">${timeLabel} (${slot.durationMinutes} min)</div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            ${statusBadge}
+                            ${removeAction}
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+
+            async function loadAvailability() {
+                try {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const inThirtyDays = new Date(today);
+                    inThirtyDays.setDate(inThirtyDays.getDate() + 30);
+                    const params = new URLSearchParams({
+                        from: today.toISOString(),
+                        to: inThirtyDays.toISOString(),
+                    });
+                    const res = await apiRequest(`/tutors/me/slots?${params.toString()}`);
+                    renderAvailability(res.slots || []);
+                } catch (err) {
+                    renderAvailability([]);
+                    setAvailabilityError(err?.message || 'Could not load availability.');
+                }
+            }
 
             async function loadDashboard() {
                 try {
@@ -1289,15 +1349,16 @@ document.addEventListener('DOMContentLoaded', () => {
                             const end = new Date(start.getTime() + (b.durationMinutes || 60) * 60000);
                             const timeStr = start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) + ' - ' + end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
                             const dateStr = start.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                            const st = (b.status || 'confirmed').toLowerCase();
+                            const st = (b.status || '').toLowerCase();
+                            const statusLabel = st ? (st.charAt(0).toUpperCase() + st.slice(1)) : 'Unknown';
                             const badgeClass = st === 'confirmed' ? 'status-badge status-badge--ok' : st === 'pending' ? 'status-badge status-badge--pending' : 'status-badge';
                             const join = b.meetingLink && st === 'confirmed'
                                 ? `<a class="nav-btn session-join-link" href="${b.meetingLink}" target="_blank" rel="noopener noreferrer"><i class="fas fa-video"></i> Join</a>`
-                                : `<button type="button" class="nav-btn" style="background:#f1f5f9;color:#94a3b8" disabled title="Available after payment confirms"><i class="fas fa-video"></i> Join</button>`;
+                                : `<button type="button" class="nav-btn" style="background:#f1f5f9;color:#94a3b8" disabled title="${st === 'pending' ? 'Available after payment confirms' : 'Meeting link not available'}"><i class="fas fa-video"></i> Join</button>`;
                             const bookingMeta = `<div class="booking-session-meta"><span class="booking-session-meta-id">${shortBookingRef(b.id)}</span><a class="booking-ref-link" href="${bookingDetailPageHref(b.id)}">Details</a></div>`;
                             return `<div class="session-item booking-session-row" data-booking-id="${b.id}">
-                                <div><div style="font-weight:600">${b.studentName || 'Student'}</div><div style="color:#6b7280;font-size:14px">${b.subject || 'Session'}</div>${bookingMeta}</div>
-                                <div><div style="font-weight:600">${dateStr} • ${timeStr}</div><div style="margin-top:4px"><span class="${badgeClass}">${st.charAt(0).toUpperCase() + st.slice(1)}</span></div></div>
+                                <div><div style="font-weight:600">${b.studentName || 'Student name unavailable'}</div><div style="color:#6b7280;font-size:14px">${b.subject || 'Subject unavailable'}</div>${bookingMeta}</div>
+                                <div><div style="font-weight:600">${dateStr} • ${timeStr}</div><div style="margin-top:4px"><span class="${badgeClass}">${statusLabel}</span></div></div>
                                 ${join}
                             </div>`;
                         }).join('');
@@ -1312,6 +1373,58 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             loadDashboard();
+            loadAvailability();
+
+            availabilityForm?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                setAvailabilityError('');
+                const dateVal = availabilityDateEl?.value;
+                const timeVal = availabilityTimeEl?.value;
+                const durationVal = parseInt(availabilityDurationEl?.value || '60', 10);
+                if (!dateVal || !timeVal) {
+                    setAvailabilityError('Choose both a date and start time.');
+                    return;
+                }
+                const startAt = new Date(`${dateVal}T${timeVal}`);
+                if (Number.isNaN(startAt.getTime())) {
+                    setAvailabilityError('Please enter a valid date and time.');
+                    return;
+                }
+                if (startAt <= new Date()) {
+                    setAvailabilityError('Availability must be set for a future time.');
+                    return;
+                }
+                try {
+                    await apiRequest('/tutors/me/slots', {
+                        method: 'POST',
+                        body: {
+                            startAt: startAt.toISOString(),
+                            durationMinutes: durationVal,
+                        },
+                    });
+                    availabilityForm.reset();
+                    if (availabilityDurationEl) availabilityDurationEl.value = '60';
+                    await loadAvailability();
+                } catch (err) {
+                    setAvailabilityError(err?.message || 'Could not add this availability slot.');
+                }
+            });
+
+            availabilityListEl?.addEventListener('click', async (e) => {
+                const removeBtn = e.target.closest('.dashboard-slot-remove');
+                if (!removeBtn) return;
+                const slotId = removeBtn.getAttribute('data-slot-id');
+                if (!slotId) return;
+                setAvailabilityError('');
+                removeBtn.disabled = true;
+                try {
+                    await apiRequest(`/tutors/me/slots/${encodeURIComponent(slotId)}`, { method: 'DELETE' });
+                    await loadAvailability();
+                } catch (err) {
+                    setAvailabilityError(err?.message || 'Could not remove this slot.');
+                    removeBtn.disabled = false;
+                }
+            });
 
             // Edit Profile modal
             const modal = document.getElementById('edit-profile-modal');
@@ -1498,14 +1611,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     const timeStr = start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) + ' – ' + end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
                     const dateStr = start.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
                     const st = (b.status || '').toLowerCase();
+                    const statusLabel = st ? (st.charAt(0).toUpperCase() + st.slice(1)) : 'Unknown';
                     const badgeClass = st === 'confirmed' ? 'status-badge status-badge--ok' : st === 'pending' ? 'status-badge status-badge--pending' : 'status-badge';
                     const join = b.meetingLink && st === 'confirmed'
                         ? `<a class="btn-secondary session-join-link" href="${b.meetingLink}" target="_blank" rel="noopener noreferrer"><i class="fas fa-video"></i> Join</a>`
                         : `<button type="button" class="btn-secondary" disabled style="opacity:0.6"><i class="fas fa-video"></i> Join</button>`;
                     const bookingMeta = `<div class="booking-session-meta"><span class="booking-session-meta-id">${shortBookingRef(b.id)}</span><a class="booking-ref-link" href="${bookingDetailPageHref(b.id)}">Details</a></div>`;
                     return `<div class="session-item dashboard-student-session booking-session-row" data-booking-id="${b.id}">
-                                <div><div style="font-weight:600">${b.tutorName || 'Tutor'}</div><div style="color:#6b7280;font-size:14px">${b.subject || 'Session'}</div>${bookingMeta}</div>
-                                <div><div style="font-weight:600">${dateStr} · ${timeStr}</div><div style="margin-top:4px"><span class="${badgeClass}">${st ? st.charAt(0).toUpperCase() + st.slice(1) : '-'}</span></div></div>
+                                <div><div style="font-weight:600">${b.tutorName || 'Tutor name unavailable'}</div><div style="color:#6b7280;font-size:14px">${b.subject || 'Subject unavailable'}</div>${bookingMeta}</div>
+                                <div><div style="font-weight:600">${dateStr} · ${timeStr}</div><div style="margin-top:4px"><span class="${badgeClass}">${statusLabel}</span></div></div>
                                 ${join}
                             </div>`;
                 }

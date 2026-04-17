@@ -2,7 +2,7 @@ import express from "express";
 import { listTutors, findTutorById, findTutorByUserId, updateTutor } from "../repositories/tutorRepo.js";
 import { findUserById, updateUser } from "../repositories/userRepo.js";
 import { listBookingsByTutorId, getTutorStats, hasTutorTimeConflict } from "../repositories/bookingRepo.js";
-import { createSlot, listSlotsByTutorId } from "../repositories/slotRepo.js";
+import { createSlot, deleteSlot, findSlotById, listSlotsByTutorId } from "../repositories/slotRepo.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 
 export const tutorsRouter = express.Router();
@@ -100,6 +100,40 @@ tutorsRouter.post("/me/slots", requireAuth, requireRole("tutor"), (req, res) => 
     }
     throw e;
   }
+});
+
+tutorsRouter.get("/me/slots", requireAuth, requireRole("tutor"), (req, res) => {
+  const tutor = findTutorByUserId(req.user.id);
+  if (!tutor) {
+    return res.status(404).json({ error: "NOT_FOUND", message: "Tutor profile not found" });
+  }
+  const from = req.query.from ? String(req.query.from) : undefined;
+  const to = req.query.to ? String(req.query.to) : undefined;
+  const slots = listSlotsByTutorId(tutor.id, { from, to });
+  const out = slots.map((slot) => ({
+    ...slot,
+    available: !hasTutorTimeConflict(tutor.id, slot.startAt, slot.durationMinutes),
+  }));
+  return res.json({ slots: out });
+});
+
+tutorsRouter.delete("/me/slots/:slotId", requireAuth, requireRole("tutor"), (req, res) => {
+  const tutor = findTutorByUserId(req.user.id);
+  if (!tutor) {
+    return res.status(404).json({ error: "NOT_FOUND", message: "Tutor profile not found" });
+  }
+  const slot = findSlotById(req.params.slotId);
+  if (!slot || slot.tutorId !== tutor.id) {
+    return res.status(404).json({ error: "NOT_FOUND", message: "Slot not found" });
+  }
+  if (hasTutorTimeConflict(tutor.id, slot.startAt, slot.durationMinutes)) {
+    return res.status(409).json({
+      error: "SLOT_ALREADY_BOOKED",
+      message: "This slot is already booked and cannot be removed.",
+    });
+  }
+  deleteSlot(slot.id);
+  return res.status(204).send();
 });
 
 tutorsRouter.get("/:id/slots", (req, res) => {

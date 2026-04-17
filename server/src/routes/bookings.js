@@ -85,6 +85,7 @@ bookingsRouter.post("/", requireAuth, requireRole("student"), (req, res) => {
     durationMinutes: dur,
     status: "pending",
     slotId: slotId || null,
+    hourlyRateSnapshot: tutor.hourlyRate,
   });
 
   return res.status(201).json({ booking: enrichForStudent(booking) });
